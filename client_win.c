@@ -27,8 +27,8 @@ int flg_swing = 0;
 SDL_Rect strike_zone = {350, 300, 100, 100};
 
 //画像関連変数
-SDL_Texture *texture2, *texture3, *texture4;
-SDL_Surface *image, *image2, *image3, *image4;
+SDL_Surface *bat[3] = {NULL, NULL, NULL}, *studium;
+SDL_Texture *bat_tex[3], *studium_tex;
 
 // JoyConの状態を格納する変数
 joyconlib_t jc;
@@ -79,7 +79,6 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     SDL_SetWindowTitle(gMainWindow, title);
 
     /* 背景を白にする */
-    SDL_SetRenderDrawColor(gMainRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gMainRenderer);
 
     // BGMを流す\
@@ -94,6 +93,14 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     if (joycon_open(&jc, JOYCON_R)) {
         printf("joycon open failed.\n");
         return -1;
+    }
+
+    studium = IMG_Load("picture/stadium.png");
+
+    studium_tex = SDL_CreateTextureFromSurface(gMainRenderer, studium);
+
+    if (!studium) {
+        printf("image not load");
     }
 
     SDL_RenderPresent(gMainRenderer);  //描写
@@ -150,13 +157,13 @@ void *draw(void *param) {  // 描画関数
     gMainRenderer = (SDL_Renderer *)param;
 
     /* 描画 */
-    SDL_SetRenderDrawColor(gMainRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-    SDL_RenderClear(gMainRenderer);  // 背景の描画
 
     SDL_SetRenderDrawColor(gMainRenderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderDrawRect(gMainRenderer, &rect_bat);  // バット(枠)の描画
 
     filledCircleColor(gMainRenderer, ball.x, ball.y, ball.r, 0xffffffff);
+
+    SDL_RenderPresent(gMainRenderer);
 
     // 判定用定数に格納
     pos_ball.x = ball.x;
@@ -243,7 +250,12 @@ void WindowEvent(int num, int clientID) {
     /* 引き数チェック */
     assert(0 < num && num <= MAX_CLIENTS);
 
-    SDL_RenderPresent(gMainRenderer);  // ボールの描画
+    SDL_Rect stdRect = {0, 0, 1800, 1200};
+    SDL_Rect drawStdRect = {0, 0, 1200, 800};
+
+    SDL_SetRenderDrawColor(gMainRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderClear(gMainRenderer);
+    SDL_RenderCopy(gMainRenderer, studium_tex, &stdRect, &drawStdRect);
 
     // イベントを取得したなら
     while (SDL_PollEvent(&event)) {
