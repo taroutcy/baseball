@@ -39,7 +39,7 @@ int Batter_key = 1;
 int Pitya_key = 1;
 
 //バッターがどの速度でスイングするのかを示す. Speedが0, 1, 2はそれぞれ遅い, 普通, 早い
-int Batter_Speed = 0;
+int Batter_Speed = 0, Batter_Speed_True = 0;
 int Batter_Speed_back = -1;
 
 void *animeBatter();
@@ -244,13 +244,13 @@ void *animeBatter() {
         SDL_Rect imgRect = (SDL_Rect){img_size * count_disp, 0, img_size, img_size};
         SDL_Rect drawRect = (SDL_Rect){80, 260, draw_size, draw_size};
 
-        SDL_RenderCopy(gMainRenderer, bat_tex[Batter_Speed], &imgRect, &drawRect);
+        SDL_RenderCopy(gMainRenderer, bat_tex[Batter_Speed_True], &imgRect, &drawRect);
         SDL_RenderPresent(gMainRenderer);
 
-        printf("%d\n", count_disp);
+        printf("butter speed: %d\n", Batter_Speed_True);
         count_disp++;
 
-        if (count_disp >= bat_num[Batter_Speed]) {
+        if (count_disp >= bat_num[Batter_Speed_True]) {
             bat_disp = 0;
             printf("last png\n");
         }
@@ -267,6 +267,7 @@ void animeBatter_JUDGE(void) {
             printf("遅い");
             SendBatter_swing();
             bat_disp = 1;
+            Batter_Speed_True = 0;
             // printf("%d",pos_ball.x);
         }
         //普通のスイングアニメーションを流す
@@ -274,12 +275,14 @@ void animeBatter_JUDGE(void) {
             printf("普通");
             SendBatter_swing();
             bat_disp = 1;
+            Batter_Speed_True = 1;
         }
         //早いスイングアニメーションを流す
         if (Batter_Speed == 2) {
             printf("早い");
             SendBatter_swing();
             bat_disp = 1;
+            Batter_Speed_True = 2;
         }
     }
 }
