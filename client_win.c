@@ -27,8 +27,8 @@ int flg_swing = 0;
 SDL_Rect strike_zone = {350, 300, 100, 100};
 
 //画像関連変数
-SDL_Surface *bat[3] = {NULL, NULL, NULL}, *studium;
-SDL_Texture *bat_tex[3], *studium_tex;
+SDL_Surface *bat[3] = {NULL, NULL, NULL}, *stadium;
+SDL_Texture *bat_tex[3], *stadium_tex;
 
 // JoyConの状態を格納する変数
 joyconlib_t jc;
@@ -95,13 +95,24 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
         return -1;
     }
 
-    studium = IMG_Load("picture/stadium.png");
+    bat[0] = IMG_Load("picture/bat_slow.png");
+    bat[1] = IMG_Load("picture/bat_normal.png");
+    bat[2] = IMG_Load("picture/bat_fast.png");
+    stadium = IMG_Load("picture/stadium.png");
 
-    studium_tex = SDL_CreateTextureFromSurface(gMainRenderer, studium);
-
-    if (!studium) {
+    if (!bat[0] || !bat[1] || !bat[2] || !stadium) {
         printf("image not load");
     }
+
+    bat_tex[0] = SDL_CreateTextureFromSurface(gMainRenderer, bat[0]);
+    bat_tex[1] = SDL_CreateTextureFromSurface(gMainRenderer, bat[1]);
+    bat_tex[2] = SDL_CreateTextureFromSurface(gMainRenderer, bat[2]);
+    stadium_tex = SDL_CreateTextureFromSurface(gMainRenderer, stadium);
+
+    SDL_FreeSurface(bat[0]);
+    SDL_FreeSurface(bat[1]);
+    SDL_FreeSurface(bat[2]);
+    SDL_FreeSurface(stadium);
 
     SDL_RenderPresent(gMainRenderer);  //描写
 }
@@ -157,6 +168,11 @@ void *draw(void *param) {  // 描画関数
     gMainRenderer = (SDL_Renderer *)param;
 
     /* 描画 */
+
+    SDL_Rect stdRect = {0, 0, 1800, 1200};
+    SDL_Rect drawStdRect = {0, 0, 1200, 800};
+
+    SDL_RenderCopy(gMainRenderer, stadium_tex, &stdRect, &drawStdRect);
 
     SDL_SetRenderDrawColor(gMainRenderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderDrawRect(gMainRenderer, &rect_bat);  // バット(枠)の描画
@@ -250,12 +266,8 @@ void WindowEvent(int num, int clientID) {
     /* 引き数チェック */
     assert(0 < num && num <= MAX_CLIENTS);
 
-    SDL_Rect stdRect = {0, 0, 1800, 1200};
-    SDL_Rect drawStdRect = {0, 0, 1200, 800};
-
     SDL_SetRenderDrawColor(gMainRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(gMainRenderer);
-    SDL_RenderCopy(gMainRenderer, studium_tex, &stdRect, &drawStdRect);
 
     // イベントを取得したなら
     while (SDL_PollEvent(&event)) {
