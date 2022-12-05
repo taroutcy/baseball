@@ -23,6 +23,7 @@ extern void Present(int i);
 
 //タイマ処理によって描写関数を呼び出す
 extern Uint32 draw_timer(Uint32 interval, void *param);
+extern Uint32 draw_timer_bat(Uint32 interval, void *param);
 
 /* client_command.c */
 extern int ExecuteCommand(char command);

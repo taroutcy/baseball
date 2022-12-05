@@ -45,6 +45,7 @@ SDL_Renderer *gMainRenderer;
 
 // timerID
 SDL_TimerID my_timer_id;
+SDL_TimerID my_timer_id_bat;
 
 int flag_swing_pi;
 int y;

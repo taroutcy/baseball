@@ -23,13 +23,14 @@ int judge_swing(int flg_swing, SDL_Point pos_ball, SDL_Rect rect_bat);
 int judge_strike(int flg_swing, ball_param ball, SDL_Rect rect_bat);
 
 //野球関連
-int flg_swing = 0;
+int flg_swing = 0, bat_disp = 0;
 SDL_Rect strike_zone = {350, 300, 100, 100};
 
 //画像関連変数
 SDL_Surface *bat[3] = {NULL, NULL, NULL}, *stadium;
 SDL_Texture *bat_tex[3], *stadium_tex;
 
+int bat_num[3] = {40, 23, 16};
 // JoyConの状態を格納する変数
 joyconlib_t jc;
 
@@ -40,6 +41,8 @@ int Pitya_key = 1;
 //バッターがどの速度でスイングするのかを示す. Speedが0, 1, 2はそれぞれ遅い, 普通, 早い
 int Batter_Speed = 0;
 int Batter_Speed_back = -1;
+
+void *animeBatter();
 
 /*****************************************************************
 関数名	: InitWindows
@@ -210,8 +213,48 @@ int judge_strike(int flg_swing, ball_param ball, SDL_Rect rect_bat) {
         return 0;
 }
 
+Uint32 draw_timer_bat(Uint32 interval, void *param) {
+    SDL_Event event;
+    SDL_UserEvent userevent;
+
+    /* コールバックでSDL_USEREVENTイベントをキューに入れる。
+    このコールバック関数は一定の周期で再び呼ばれる */
+
+    userevent.type = SDL_USEREVENT;
+    userevent.code = 0;
+    userevent.data1 = &animeBatter;
+    userevent.data2 = param;
+
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+
+    SDL_PushEvent(&event);
+    return (interval);
+}
+
 //バッターアニメーションを流す
-void animeBatter(int i) {
+void *animeBatter() {
+    static int count_disp = 0;  // 表示した回数
+
+    SDL_Surface *img = NULL;
+    int img_size = 1000;  // 一枚の画像の縦と横の大きさ
+    int draw_size = 600;
+
+    if (bat_disp == 1) {
+        SDL_Rect imgRect = (SDL_Rect){img_size * count_disp, 0, img_size, img_size};
+        SDL_Rect drawRect = (SDL_Rect){80, 260, draw_size, draw_size};
+
+        SDL_RenderCopy(gMainRenderer, bat_tex[Batter_Speed], &imgRect, &drawRect);
+        SDL_RenderPresent(gMainRenderer);
+
+        printf("%d\n", count_disp);
+        count_disp++;
+
+        if (count_disp >= bat_num[Batter_Speed]) {
+            bat_disp = 0;
+            printf("last png\n");
+        }
+    }
 }
 
 //どのバッターのスイングアニメーションを流すのかを判断する
@@ -222,21 +265,21 @@ void animeBatter_JUDGE(void) {
         // 遅いスイングアニメーションを流す
         if (Batter_Speed == 0) {
             printf("遅い");
-            animeBatter(0);
             SendBatter_swing();
+            bat_disp = 1;
             // printf("%d",pos_ball.x);
         }
         //普通のスイングアニメーションを流す
         if (Batter_Speed == 1) {
             printf("普通");
-            animeBatter(1);
             SendBatter_swing();
+            bat_disp = 1;
         }
         //早いスイングアニメーションを流す
         if (Batter_Speed == 2) {
             printf("早い");
-            animeBatter(2);
             SendBatter_swing();
+            bat_disp = 1;
         }
     }
 }
@@ -296,21 +339,18 @@ void WindowEvent(int num, int clientID) {
             case SDL_JOYAXISMOTION:
                 //もし打者ならば
                 if (clientID == 0) {
-                    if (jc.axis[2].acc_y > 40.0 || jc.axis[2].acc_y < -40.0) {
+                    if (jc.axis[2].acc_y > 25.0 || jc.axis[2].acc_y < -25.0) {
                         Batter_Speed = 2;
-                        flg_swing = 1;
                         SendBall_x(pos_ball);  //これによってボールのｘ座標を送る
                         SendBall_y(pos_ball);  //これによってボールのy座標を送る
                         animeBatter_JUDGE();
-                    } else if (jc.axis[2].acc_y > 27.0 || jc.axis[2].acc_y < -27.0) {
+                    } else if (jc.axis[2].acc_y > 20.0 || jc.axis[2].acc_y < -20.0) {
                         Batter_Speed = 1;
-                        flg_swing = 1;
                         SendBall_x(pos_ball);  //これによってボールのｘ座標を送る
                         SendBall_y(pos_ball);  //これによってボールのy座標を送る
                         animeBatter_JUDGE();
-                    } else if (jc.axis[2].acc_y > 22.0 || jc.axis[2].acc_y < -22.0) {
+                    } else if (jc.axis[2].acc_y > 15.0 || jc.axis[2].acc_y < -15.0) {
                         Batter_Speed = 0;
-                        flg_swing = 1;
                         SendBall_x(pos_ball);  //これによってボールのｘ座標を送る
                         SendBall_y(pos_ball);  //これによってボールのy座標を送る
                         animeBatter_JUDGE();
