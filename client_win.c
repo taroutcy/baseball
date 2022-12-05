@@ -185,8 +185,8 @@ void *draw(void *param) {  // 描画関数
     pos_ball.x = ball.x;
     pos_ball.y = ball.y;
 
-    SendBall_x(pos_ball);
-    SendBall_y(pos_ball);
+    // SendBall_x(pos_ball);
+    // SendBall_y(pos_ball);
 
     //ボールの中心座標が枠内にない時にスイングされると初期化
     if (!(SDL_PointInRect(&pos_ball, &rect_bat))) {
@@ -194,10 +194,10 @@ void *draw(void *param) {  // 描画関数
     }
     //サーバーからの合図がきた
     if (y == 1) {
-        ball.yp = -10;
+        ball.yp = -20;
     }
     if (flag_swing_pi == 1) {
-        ball.yp = 10;
+        ball.yp = 20;
         flag_swing_pi = 0;
     }
     ball.y = ball.y + ball.yp;  // 座標の更新
