@@ -40,16 +40,6 @@ int Pitya_key = 1;
 int Batter_Speed = 0;
 int Batter_Speed_back = -1;
 
-/* 勝敗カウント用変数 */
-char winstr[64];
-char winstr2[64];
-int win = 1;	  // 勝ちの数値を格納するための変数
-int win_back = 1; // 一つ前の数値を格納するための変数
-char lostr[64];
-char lostr2[64];
-int lo = 1;		 // 引き分けの数値を格納するための変数
-int lo_back = 1; // 引き分けの一つ前の数値を格納するための変数
-
 /*****************************************************************
 関数名	: InitWindows
 機能	: メインウインドウの表示，設定を行う
@@ -63,9 +53,7 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE])
 	SDL_Texture *texture;
 	SDL_Rect src_rect;
 	SDL_Rect dest_rect;
-	char clientButton[4][6] = {"g.png", "t.png", "p.png", "3.jpg"}; //グー、チョキ、パーを読み込む
-	char endButton[] = "END.png";
-	char *s, title[10];
+	char title[10];
 
 	/* 引き数チェック */
 	assert(0 < num && num <= MAX_CLIENTS);
@@ -79,25 +67,6 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE])
 
 	SDL_Event quit_event = {SDL_QUIT}; // 特定のイベント名を格納
 
-	/*
-	// SDL_mixerの初期化（MP3ファイルを使用）
-	Mix_Init(MIX_INIT_MP3);
-
-	// オーディオデバイスの初期化
-	if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) < 0)
-	{
-		printf("failed to initialize SDL_mixer.\n");
-		SDL_Quit();
-		exit(-1);
-	}
-	// BGMと効果音のサウンドファイルの読み込み
-	if ((music = Mix_LoadMUS("newbgm1.mp3")) == NULL || (chunk = Mix_LoadWAV("guiterA_ac.wav")) == NULL || (chunk2 = Mix_LoadWAV("guiterB_ac.wav")) == NULL || (chunk3 = Mix_LoadWAV("guiterC_ac.wav")) == NULL || (chunk4 = Mix_LoadWAV("guiterD_ac.wav")) == NULL || (chunk5 = Mix_LoadWAV("guiterE_ac.wav")) == NULL || (chunk6 = Mix_LoadWAV("guiterF_ac.wav")) == NULL || (chunk7 = Mix_LoadWAV("guiterA_el.wav")) == NULL || (chunk8 = Mix_LoadWAV("guiterB_el.wav")) == NULL || (chunk9 = Mix_LoadWAV("guiterC_el.wav")) == NULL || (chunk10 = Mix_LoadWAV("guiterD_el.wav")) == NULL || (chunk11 = Mix_LoadWAV("guiterE_el.wav")) == NULL || (chunk12 = Mix_LoadWAV("guiterF_el.wav")) == NULL || (music2 = Mix_LoadMUS("ゲームクリア.mp3")) == NULL || (music3 = Mix_LoadMUS("ゲーム失敗.mp3")) == NULL)
-	{
-		printf("failed to load music and chunk.\n");
-		Mix_CloseAudio(); // オーディオデバイスの終了
-		SDL_Quit();
-		exit(-1);
-	}*/
 
 	/* メインのウインドウを作成する */
 	if ((gMainWindow = SDL_CreateWindow("My Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 450, 0)) == NULL)
@@ -116,8 +85,7 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE])
 	SDL_SetRenderDrawColor(gMainRenderer, 0, 0, 0, 255);
 	SDL_RenderClear(gMainRenderer);
 
-	// BGMを流す
-	// Mix_PlayMusic(music, -1);
+	// BGMを流す\
 
 	SDL_JoystickID joyid[2] = {};
 	printf("%d\n", SDL_NumJoysticks());
@@ -143,16 +111,9 @@ void Present(int i)
 	//白色で塗りつぶす
 	boxColor(gMainRenderer, 50, 65, 380, 400, 0xffffffff); //
 
-	//ツーベースの時
+	//ヒットの時
 	if (i == 1)
 	{
-		sprintf(winstr, "Win:  %d", win);
-		sprintf(winstr2, "Win:  %d", win_back);
-		// stringColor(gMainRenderer, 380, 20, winstr2, 0xffffffff); //一つ前の数値を削除
-		stringColor(gMainRenderer, 380, 20, winstr, 0xffffffff); //勝ち数を表示
-		SDL_RenderPresent(gMainRenderer);
-		win_back = win;
-		win = win + 1;
 	}
 }
 
