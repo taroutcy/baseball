@@ -35,6 +35,22 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    /*// 球種選択(仮)
+    if(clientID == 1)
+    {
+        while (1)
+        {
+            //　変更箇所
+            printf("球種を選択してください. ストレート: 1, ジグザグ: 2, 消える魔球: 3, カーブ(右): 4, カーブ(左): 5, 加速球: 6\n");
+            scanf("%d", &flg_ball_pattern);
+            if (flg_ball_pattern)
+            {
+                flg_select_ball = 1;
+                break;
+            }
+        }
+    }*/
+
     /* タイマー設定 */
     my_timer_id_bat = SDL_AddTimer(40, draw_timer_bat, (void *)gMainRenderer);
     my_timer_id = SDL_AddTimer(40, draw_timer, (void *)gMainRenderer);

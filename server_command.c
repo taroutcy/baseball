@@ -14,7 +14,7 @@ static int GetRandomInt(int n);
 static ball_param ball = {600, 100, 10, 0, 0};
 static SDL_Rect rect_bat = {450, 500, 300, 200};
 static SDL_Point pos_ball;
-SDL_Rect strike_zone = {350, 300, 100, 100};
+SDL_Rect strike_zone = {450, 500, 300, 200};
 
 int judge_swing(int flg_swing, SDL_Point pos_ball, SDL_Rect rect_bat) {
     if (flg_swing && SDL_PointInRect(&pos_ball, &rect_bat))
@@ -82,12 +82,17 @@ int ExecuteCommand(char command, int pos) {
             break;
         case Batter_Swing_COMMAND:
             dataSize = 0;
-            printf("Batter Swing");
+            printf("Batter Swing\n");
+            /* コマンドのセット */
+            SetCharData2DataBlock(data, command, &dataSize);
 
+            /* 全ユーザーに送る */
+            SendData(ALL_CLIENTS, data, dataSize);
+            
             if (judge_swing(1, pos_ball, rect_bat)) {
-                printf("OK!");
+                printf("OK!\n");
                 /* コマンドのセット */
-                SetCharData2DataBlock(data, command, &dataSize);
+                SetCharData2DataBlock(data, JUDGE_HIT, &dataSize);
 
                 //数値のセット
                 SetIntData2DataBlock(data, -10, &dataSize);
@@ -104,6 +109,55 @@ int ExecuteCommand(char command, int pos) {
             SendData(ALL_CLIENTS, data, dataSize);
 
             break;
+        case STRAIGHT:
+            dataSize = 0;
+
+            //数値のセット
+            SetCharData2DataBlock(data, command, &dataSize);
+            /* 全ユーザーに送る */
+            SendData(ALL_CLIENTS, data, dataSize);      
+            printf("sever:1");      
+            break;
+        case ZIGZAG:
+            dataSize = 0;
+
+            //数値のセット
+            SetCharData2DataBlock(data, command, &dataSize);
+            /* 全ユーザーに送る */
+            SendData(ALL_CLIENTS, data, dataSize);    
+            break;  
+        case DISAPPEAR:
+            dataSize = 0;
+
+            //数値のセット
+            SetCharData2DataBlock(data, command, &dataSize);
+            /* 全ユーザーに送る */
+            SendData(ALL_CLIENTS, data, dataSize);    
+            break; 
+        case CURVE_R:
+            dataSize = 0;
+
+            //数値のセット
+            SetCharData2DataBlock(data, command, &dataSize);
+            /* 全ユーザーに送る */
+            SendData(ALL_CLIENTS, data, dataSize);    
+            break;  
+        case CURVE_L:
+            dataSize = 0;
+
+            //数値のセット
+            SetCharData2DataBlock(data, command, &dataSize);
+            /* 全ユーザーに送る */
+            SendData(ALL_CLIENTS, data, dataSize);    
+            break;
+        case ACCELERATE:
+            dataSize = 0;
+
+            //数値のセット
+            SetCharData2DataBlock(data, command, &dataSize);
+            /* 全ユーザーに送る */
+            SendData(ALL_CLIENTS, data, dataSize);    
+            break;    
         default:
             /* 未知のコマンドが送られてきた */
             fprintf(stderr, "0x%02x is not command!\n", command);

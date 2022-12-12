@@ -42,6 +42,8 @@ int ExecuteCommand(char command)
         break;
     case JUDGE_HIT:
         Present(1);
+        y = 1; //ボールの速度を変更
+        printf("%d", intData);
         break;
     case JUDGE_TWOBASE:
         Present(2);
@@ -50,10 +52,25 @@ int ExecuteCommand(char command)
         Present(3);
         break;
     case Batter_Swing_COMMAND:
-        //データの受け取り
-        RecvIntData(&intData);
-        y = 1; //ボールの速度を変更
-        printf("%d", intData);
+        bat_disp = 1;
+        break;
+    case STRAIGHT:
+        flg_ball_pattern = STRAIGHT;
+        break;
+    case ZIGZAG:
+        flg_ball_pattern = ZIGZAG;
+        break;
+    case DISAPPEAR:
+        flg_ball_pattern = DISAPPEAR;
+        break;
+    case CURVE_R:
+        flg_ball_pattern = CURVE_R;
+        break;
+    case CURVE_L:
+        flg_ball_pattern = CURVE_L;
+        break;
+    case ACCELERATE:
+        flg_ball_pattern = ACCELERATE;
         break;
     case PITI:
         flag_swing_pi = 1;
@@ -125,8 +142,47 @@ void SendPiti(void){
     SetCharData2DataBlock(data, PITI, &dataSize);
     //データ送信
     SendData(data, dataSize);
-
 }
+
+//合図を送る
+void SendBallType(int i){
+    unsigned char data[MAX_DATA];
+    int dataSize;
+
+    dataSize = 0;
+    if(i == STRAIGHT){
+        /* コマンドのセット */
+        SetCharData2DataBlock(data, STRAIGHT, &dataSize);
+        //データ送信
+        SendData(data, dataSize);
+    }else if(i == ZIGZAG){
+        /* コマンドのセット */
+        SetCharData2DataBlock(data, ZIGZAG, &dataSize);
+        //データ送信
+        SendData(data, dataSize);
+    }else if(i == DISAPPEAR){
+        /* コマンドのセット */
+        SetCharData2DataBlock(data, DISAPPEAR, &dataSize);
+        //データ送信
+        SendData(data, dataSize);
+    }else if(i == CURVE_R){
+        /* コマンドのセット */
+        SetCharData2DataBlock(data, CURVE_R, &dataSize);
+        //データ送信
+        SendData(data, dataSize);
+    }else if(i == CURVE_L){
+        /* コマンドのセット */
+        SetCharData2DataBlock(data, CURVE_L, &dataSize);
+        //データ送信
+        SendData(data, dataSize);
+    }else if(i == ACCELERATE){
+        /* コマンドのセット */
+        SetCharData2DataBlock(data, ACCELERATE, &dataSize);
+        //データ送信
+        SendData(data, dataSize);
+    }
+}
+
 
 /*****************************************************************
 関数名	: SendBall_y

@@ -24,7 +24,10 @@ int judge_strike(int flg_swing, ball_param ball, SDL_Rect rect_bat);
 
 //野球関連
 int flg_swing = 0, bat_disp = 0;
-SDL_Rect strike_zone = {350, 300, 100, 100};
+int flg_ball_pattern = 0; // 選択した球種
+int flg_select_ball = 0;  // 球種選択したか
+int flag_swing_pi = 0;   // ゲーム開始したか
+SDL_Rect strike_zone = {450, 500, 300, 200};
 
 //画像関連変数
 SDL_Surface *bat[3] = {NULL, NULL, NULL}, *stadium;
@@ -166,7 +169,8 @@ static SDL_Point pos_ball;
 //割り込みで呼び出す描写関数
 void *draw(void *param) {  // 描画関数
 
-    static int flg_reverse = 0;
+    static int flg_erase_ball = 0;
+    static int flg_hit = 0;
 
     gMainRenderer = (SDL_Renderer *)param;
 
@@ -180,30 +184,129 @@ void *draw(void *param) {  // 描画関数
     SDL_SetRenderDrawColor(gMainRenderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderDrawRect(gMainRenderer, &rect_bat);  // バット(枠)の描画
 
-    filledCircleColor(gMainRenderer, ball.x, ball.y, ball.r, 0xffffffff);
-
-    SDL_RenderPresent(gMainRenderer);
+    if (flg_erase_ball == 0)
+    {
+        filledCircleColor(gMainRenderer, ball.x, ball.y, ball.r, 0xffffffff);
+        SDL_RenderPresent(gMainRenderer); // ボールの描画
+    }
+    else
+    {
+        SDL_RenderPresent(gMainRenderer);
+    }
 
     // 判定用定数に格納
     pos_ball.x = ball.x;
     pos_ball.y = ball.y;
 
-    // SendBall_x(pos_ball);
-    // SendBall_y(pos_ball);
+    SendBall_x(pos_ball);
+    SendBall_y(pos_ball);
 
     //ボールの中心座標が枠内にない時にスイングされると初期化
     if (!(SDL_PointInRect(&pos_ball, &rect_bat))) {
         flg_swing = 0;
     }
-    //サーバーからの合図がきた
-    if (y == 1) {
-        ball.yp = -20;
-    }
-    if (flag_swing_pi == 1) {
+
+    /*if (flag_swing_pi == 1) {
         ball.yp = 20;
         flag_swing_pi = 0;
+    }*/
+    switch (flg_ball_pattern)
+    {
+    case STRAIGHT:
+        if (flag_swing_pi == 1)
+        {
+            ball.yp = 15;
+            flag_swing_pi = 2;
+        }
+        break;
+
+    case ZIGZAG:
+        if (flag_swing_pi == 1)
+        {
+            ball.xp = 50;
+            ball.yp = 10;
+            flag_swing_pi = 2;
+        }
+        if (ball.x <= 300 || ball.x >= 900)
+            ball.xp *= -1;
+        break;
+
+    case DISAPPEAR:
+        if (flag_swing_pi == 1)
+        {
+            ball.yp = 15;
+            flag_swing_pi = 2;
+        }
+        if (flg_hit == 0 && ball.y >= 350 && flag_swing_pi == 2)
+            flg_erase_ball = 1;
+        break;
+    
+    case CURVE_R:
+        if(flag_swing_pi == 1)
+        {
+            ball.yp = 15;
+            flag_swing_pi = 2;
+        }
+        if(flag_swing_pi == 2)
+        {
+            ball.xp += 4; 
+        }
+        if(flag_swing_pi == 3)
+        {
+            ball.xp -= 4; 
+        }
+        if(ball.y >= 225 && flg_hit == 0){
+            flag_swing_pi = 3;
+        }
+        break;
+    
+    case CURVE_L:
+        if(flag_swing_pi == 1)
+        {
+            ball.yp = 15;
+            flag_swing_pi = 2;
+        }
+        if(flag_swing_pi == 2)
+        {
+            ball.xp -= 4; 
+        }
+        if(flag_swing_pi == 3)
+        {
+            ball.xp += 4; 
+        }
+        if(ball.y >= 225 && flg_hit == 0){
+            flag_swing_pi = 3;
+        }
+        break;
+    
+    case ACCELERATE:
+        if(flag_swing_pi == 1)
+        {
+            ball.yp = 10;
+            flag_swing_pi = 2;
+        }
+        if(flag_swing_pi == 2)
+        {
+            ball.yp += 1; 
+        }
+        break;
     }
-    ball.y = ball.y + ball.yp;  // 座標の更新
+
+    //サーバーからの合図がきた
+    if (y == 1 && flg_erase_ball == 0) {
+        ball.xp = 0;
+        ball.yp = -20;
+    }
+    else if (y == 1 && flg_erase_ball == 1){
+        flg_erase_ball = 0;
+        ball.xp = 0;
+        ball.yp = -20;
+    }
+
+    
+    // 座標の更新
+    ball.x = ball.x + ball.xp;
+    ball.y = ball.y + ball.yp;
 }
 
 int judge_strike(int flg_swing, ball_param ball, SDL_Rect rect_bat) {
@@ -247,7 +350,7 @@ void *animeBatter() {
         SDL_RenderCopy(gMainRenderer, bat_tex[Batter_Speed_True], &imgRect, &drawRect);
         SDL_RenderPresent(gMainRenderer);
 
-        printf("butter speed: %d\n", Batter_Speed_True);
+        //printf("butter speed: %d\n", Batter_Speed_True);
         count_disp++;
 
         if (count_disp >= bat_num[Batter_Speed_True]) {
@@ -266,7 +369,6 @@ void animeBatter_JUDGE(void) {
         if (Batter_Speed == 0) {
             printf("遅い");
             SendBatter_swing();
-            bat_disp = 1;
             Batter_Speed_True = 0;
             // printf("%d",pos_ball.x);
         }
@@ -274,14 +376,12 @@ void animeBatter_JUDGE(void) {
         if (Batter_Speed == 1) {
             printf("普通");
             SendBatter_swing();
-            bat_disp = 1;
             Batter_Speed_True = 1;
         }
         //早いスイングアニメーションを流す
         if (Batter_Speed == 2) {
             printf("早い");
             SendBatter_swing();
-            bat_disp = 1;
             Batter_Speed_True = 2;
         }
     }
@@ -330,8 +430,6 @@ void WindowEvent(int num, int clientID) {
                 switch (event.key.keysym.sym) {
                     case SDLK_RETURN:  // Enterキーが押された時
                         printf("enter\n");
-
-                        flag_swing_pi = 1;
                         break;
                     case SDLK_ESCAPE:
                         SendEndCommand();
@@ -344,18 +442,12 @@ void WindowEvent(int num, int clientID) {
                 if (clientID == 0) {
                     if (jc.axis[2].acc_y > 25.0 || jc.axis[2].acc_y < -25.0) {
                         Batter_Speed = 2;
-                        SendBall_x(pos_ball);  //これによってボールのｘ座標を送る
-                        SendBall_y(pos_ball);  //これによってボールのy座標を送る
                         animeBatter_JUDGE();
                     } else if (jc.axis[2].acc_y > 20.0 || jc.axis[2].acc_y < -20.0) {
                         Batter_Speed = 1;
-                        SendBall_x(pos_ball);  //これによってボールのｘ座標を送る
-                        SendBall_y(pos_ball);  //これによってボールのy座標を送る
                         animeBatter_JUDGE();
                     } else if (jc.axis[2].acc_y > 15.0 || jc.axis[2].acc_y < -15.0) {
                         Batter_Speed = 0;
-                        SendBall_x(pos_ball);  //これによってボールのｘ座標を送る
-                        SendBall_y(pos_ball);  //これによってボールのy座標を送る
                         animeBatter_JUDGE();
                     }
                 }
@@ -377,15 +469,33 @@ void WindowEvent(int num, int clientID) {
                 break;
             // ジョイスティックのボタンが押された時
             case SDL_JOYBUTTONDOWN:
-                //ジョイコンのボタンと対応したギターコードを挿入
-                if (jc.button.btn.A == 1) {
-                    printf("\n%d\n", Batter_Speed);
-                    Batter_Speed = 0;  //リセット
-                    Batter_Speed_back = -1;
-                    Batter_key = 1;
-                }
-                if (jc.button.btn.B == 1) {
-                }
+                if(clientID == 1){
+                    //ジョイコンのボタンと対応したを挿入
+                    if (jc.button.btn.A == 1 && flag_swing_pi == 0) {
+                        SendBallType(STRAIGHT);
+                        printf("選択された球種: ストレート\n");
+                    }
+                    if (jc.button.btn.B == 1 && flag_swing_pi == 0) {
+                        SendBallType(ZIGZAG);
+                        printf("選択された球種: ジグザグ\n");
+                    }
+                    if(jc.button.btn.Y == 1 && flag_swing_pi == 0){
+                        SendBallType(DISAPPEAR);
+                        printf("選択された球種: 消えるストレート\n");
+                    }
+                    if(jc.button.btn.X == 1 && flag_swing_pi == 0){
+                        SendBallType(CURVE_R);
+                        printf("選択された球種: 右カーブ\n");
+                    }
+                    if(jc.button.btn.R == 1 && flag_swing_pi == 0){
+                        SendBallType(CURVE_L);
+                        printf("選択された球種: 左カーブ\n");
+                    }
+                    if(jc.button.btn.ZR == 1 && flag_swing_pi == 0){
+                        SendBallType(ACCELERATE);
+                        printf("選択された球種: 加速ストレート\n");
+                    }
+                }   
                 break;
             // SDLの利用を終了する時（イベントキューにSDL_QUITイベントが追加された時）
             case SDL_QUIT:

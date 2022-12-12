@@ -6,6 +6,16 @@
 #ifndef _CLIENT_FUNC_H_
 #define _CLIENT_FUNC_H_
 
+#define WINDOW_X 1200
+#define WINDOW_Y 800
+
+#define STRAIGHT 1
+#define ZIGZAG 2
+#define DISAPPEAR 3
+#define CURVE_R 4
+#define CURVE_L 5
+#define ACCELERATE 6
+
 #include"common.h"
 
 /* client_net.c */
@@ -20,6 +30,7 @@ extern int InitWindows(int clientID,int num,char name[][MAX_NAME_SIZE]);
 extern void DestroyWindow(void);
 extern void WindowEvent(int num,int clientID);
 extern void Present(int i);
+
 
 //タイマ処理によって描写関数を呼び出す
 extern Uint32 draw_timer(Uint32 interval, void *param);
