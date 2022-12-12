@@ -12,7 +12,7 @@ all: $(TARGET1) $(TARGET2)
 $(TARGET1):	$(OBJS1)
 	gcc -o $(TARGET1) $(OBJS1) -lm -lSDL2
 $(TARGET2):	$(OBJS2)
-	gcc -o $(TARGET2) $(OBJS2) -lm -lSDL2 -lSDL2_image -lSDL2_gfx -ljoyconlib -lhidapi-hidraw $(LDFLAGS)
+	gcc -o $(TARGET2) $(OBJS2) -lm -lSDL2 -lSDL2_image -lSDL2_gfx -ljoyconlib -lhidapi-hidraw -lSDL2_mixer $(LDFLAGS)
 
 clean:
 	rm *.o $(TARGET1) $(TARGET2)

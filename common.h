@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <math.h>
 #include <SDL2/SDL.h> // SDLを用いるために必要なヘッダファイルをインクルード
+#include <SDL2/SDL_mixer.h> // SDLでサウンドを用いるために必要なヘッダファイルをインクルード
 
 #define PORT (u_short)8888  /* ポート番号 */
 
@@ -59,6 +60,11 @@ int y;
 int flg_ball_pattern; // 選択した球種
 int flg_select_ball;  // 球種選択したか
 int bat_disp;
+
+
+//music
+Mix_Music *cheering,*start; // BGMデータ格納用構造体
+Mix_Chunk *hit,*karaburi,*catch,*makyu,*curve1; // 効果音データ格納用構造体
 
 typedef struct // ボール用構造体
 {

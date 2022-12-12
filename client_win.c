@@ -45,6 +45,7 @@ int Pitya_key = 1;
 int Batter_Speed = 0, Batter_Speed_True = 0;
 int Batter_Speed_back = -1;
 
+
 void *animeBatter();
 
 /*****************************************************************
@@ -59,6 +60,7 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     SDL_Texture *texture;
     SDL_Rect src_rect;
     SDL_Rect dest_rect;
+
     char title[10];
 
     /* 引き数チェック */
@@ -71,6 +73,30 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     }
 
     SDL_Event quit_event = {SDL_QUIT};  // 特定のイベント名を格納
+
+    // SDL_mixerの初期化（MP3ファイルを使用）
+    Mix_Init(MIX_INIT_MP3);
+
+    // オーディオデバイスの初期化
+    if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) < 0) {
+        printf("failed to initialize SDL_mixer.\n");
+        SDL_Quit();
+        exit(-1);
+    }
+
+    // BGMと効果音のサウンドファイルの読み込み
+    if((cheering = Mix_LoadMUS("cheering.mp3")) == NULL || (start = Mix_LoadMUS("start.mp3")) == NULL || (hit = Mix_LoadWAV("hit.wav")) == NULL 
+    || (catch = Mix_LoadWAV("catch.wav")) == NULL || (karaburi = Mix_LoadWAV("karaburi.wav")) == NULL || (makyu = Mix_LoadWAV("makyu.wav")) == NULL
+    || (curve1 = Mix_LoadWAV("curve1.wav")) == NULL) {
+        printf("failed to load music and chunk.\n");
+        Mix_CloseAudio(); // オーディオデバイスの終了
+        SDL_Quit();
+        exit(-1);
+    }
+
+     Mix_PlayMusic(cheering, -1); // BGMの再生（繰り返し再生）
+     Mix_VolumeMusic(MIX_MAX_VOLUME/5); // BGMの音量を半減
+    
 
     /* メインのウインドウを作成する */
     if ((gMainWindow = SDL_CreateWindow("My Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 800, 0)) == NULL) {
@@ -130,6 +156,11 @@ void Present(int i) {
 
     //ヒットの時
     if (i == 1) {
+        Mix_PlayChannel(1, hit, 0); 
+    }else if(i == 2){
+        Mix_PlayChannel(1, hit, 0); 
+    }else if(i == 3){
+        Mix_PlayChannel(1, hit, 0); 
     }
 }
 
@@ -236,14 +267,19 @@ void *draw(void *param) {  // 描画関数
         {
             ball.yp = 15;
             flag_swing_pi = 2;
+            Mix_PlayChannel(1,makyu,0);
+            Mix_Volume(1,MIX_MAX_VOLUME);
         }
         if (flg_hit == 0 && ball.y >= 350 && flag_swing_pi == 2)
             flg_erase_ball = 1;
         break;
-    
+
     case CURVE_R:
         if(flag_swing_pi == 1)
         {
+
+            Mix_PlayChannel(1,curve1,1);
+            Mix_Volume(1,MIX_MAX_VOLUME);
             ball.yp = 15;
             flag_swing_pi = 2;
         }
@@ -263,6 +299,9 @@ void *draw(void *param) {  // 描画関数
     case CURVE_L:
         if(flag_swing_pi == 1)
         {
+
+            Mix_PlayChannel(1,curve1,1);
+             Mix_Volume(1,MIX_MAX_VOLUME);
             ball.yp = 15;
             flag_swing_pi = 2;
         }
@@ -370,6 +409,8 @@ void animeBatter_JUDGE(void) {
             printf("遅い");
             SendBatter_swing();
             Batter_Speed_True = 0;
+            Mix_PlayChannel(1,karaburi,0);
+            Mix_Volume(1,MIX_MAX_VOLUME*10);
             // printf("%d",pos_ball.x);
         }
         //普通のスイングアニメーションを流す
@@ -377,12 +418,16 @@ void animeBatter_JUDGE(void) {
             printf("普通");
             SendBatter_swing();
             Batter_Speed_True = 1;
+            Mix_PlayChannel(1,karaburi,0);
+            Mix_Volume(1,MIX_MAX_VOLUME*100);
         }
         //早いスイングアニメーションを流す
         if (Batter_Speed == 2) {
             printf("早い");
             SendBatter_swing();
             Batter_Speed_True = 2;
+            Mix_PlayChannel(1,karaburi,0);
+            Mix_Volume(1,MIX_MAX_VOLUME*150);
         }
     }
 }

@@ -6,6 +6,7 @@
 #include "server_common.h"
 #include "server_func.h"
 
+
 static void SetIntData2DataBlock(void *data, int intData, int *dataSize);
 static void SetCharData2DataBlock(void *data, char charData, int *dataSize);
 static int GetRandomInt(int n);
@@ -78,6 +79,8 @@ int ExecuteCommand(char command, int pos) {
             //ストライクでません　
             if (judge_strike(1, ball, rect_bat)) {  // ストライク判定(仮)
                 printf("ストライク\n");
+                //Mix_PlayChannel(1,catch,0);
+                // Mix_Volume(1,MIX_MAX_VOLUME/5);   
             }
             break;
         case Batter_Swing_COMMAND:
