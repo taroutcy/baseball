@@ -43,5 +43,6 @@ extern void SendBall_x(SDL_Point pos_ball);
 extern void SendBall_y(SDL_Point pos_ball);
 extern void SendBatter_swing(void);
 extern void SendPiti(void);
+extern void Send_JUDGE(void);
 
 #endif

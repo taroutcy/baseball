@@ -45,6 +45,11 @@ int Pitya_key = 1;
 int Batter_Speed = 0, Batter_Speed_True = 0;
 int Batter_Speed_back = -1;
 
+//
+int Onsei_key = 1;
+
+int BallType = 0;
+
 
 void *animeBatter();
 
@@ -154,13 +159,19 @@ void Present(int i) {
     //白色で塗りつぶす
     boxColor(gMainRenderer, 50, 65, 380, 400, 0xffffffff);  //
 
-    //ヒットの時
-    if (i == 1) {
-        Mix_PlayChannel(1, hit, 0); 
-    }else if(i == 2){
-        Mix_PlayChannel(1, hit, 0); 
-    }else if(i == 3){
-        Mix_PlayChannel(1, hit, 0); 
+    if(Onsei_key == 1){
+        Onsei_key = 0;
+        //ヒットの時
+        if (i == 1) {
+            Mix_PlayChannel(1, hit, 0);
+            printf("hit"); 
+        }else if(i == 2){
+            printf("Tow");
+            Mix_PlayChannel(1, hit, 0); 
+        }else if(i == 3){
+            printf("homerun");
+            Mix_PlayChannel(1, hit, 0); 
+        }
     }
 }
 
@@ -195,6 +206,8 @@ Uint32 draw_timer(Uint32 interval, void *param) {
 
 static ball_param ball = {600, 100, 10, 0, 0};
 static SDL_Rect rect_bat = {450, 500, 300, 200};
+static SDL_Rect rect_bat2 = {500, 550, 200, 100};
+static SDL_Rect rect_bat3 = {560, 560, 80, 80};
 static SDL_Point pos_ball;
 
 //割り込みで呼び出す描写関数
@@ -213,7 +226,12 @@ void *draw(void *param) {  // 描画関数
     SDL_RenderCopy(gMainRenderer, stadium_tex, &stdRect, &drawStdRect);
 
     SDL_SetRenderDrawColor(gMainRenderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawRect(gMainRenderer, &rect_bat);  // バット(枠)の描画
+    SDL_RenderDrawRect(gMainRenderer, &rect_bat);  // バット(枠)の描画 (hit)
+    SDL_SetRenderDrawColor(gMainRenderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
+    SDL_RenderDrawRect(gMainRenderer, &rect_bat2);  // バット(枠)の描画 (Two)
+    SDL_SetRenderDrawColor(gMainRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderDrawRect(gMainRenderer, &rect_bat3);  // バット(枠)の描画 (three)
+        
 
     if (flg_erase_ball == 0)
     {
@@ -237,10 +255,51 @@ void *draw(void *param) {  // 描画関数
         flg_swing = 0;
     }
 
-    /*if (flag_swing_pi == 1) {
-        ball.yp = 20;
-        flag_swing_pi = 0;
-    }*/
+    if (flag_swing_pi == 0) {
+        ball.x = 600;
+        ball.y = 100;
+        ball.r = 10;
+        ball.xp = 0;
+        ball.yp = 0;
+        Pitya_key = 1;
+        y = 0;
+    }
+    if(Reset == 1){
+        Batter_key = 1;
+        Onsei_key = 1;
+    }
+    Reset = 0;
+
+    if(BallType == STRAIGHT && Bat_swing == 0 && ball.y > 800){
+        printf("sutoraiku");
+    }
+    if(BallType == ZIGZAG && Bat_swing == 0 && ball.y > 800){
+        printf("sutoraiku");
+    }
+    if(BallType == DISAPPEAR && Bat_swing == 0 && ball.y > 800){
+        printf("ball");
+    }
+    if(BallType == DISAPPEAR && Bat_swing == 1 && ball.y > 800){
+        printf("strike");
+    }
+    if(BallType == CURVE_R && Bat_swing == 0 && (ball.x > 1200 || ball.x < 0)){
+        printf("ball");
+    }
+    if(BallType == CURVE_R && Bat_swing == 1 && (ball.x > 1200 || ball.x < 0)){
+        printf("strike");
+    }
+    if(BallType == CURVE_L && Bat_swing == 0 && (ball.x > 1200 || ball.x < 0)){
+        printf("ball");
+    }
+    if(BallType == CURVE_L && Bat_swing == 1 && (ball.x > 1200 || ball.x < 0)){
+        printf("strike");
+    }
+    if(BallType == ACCELERATE && Bat_swing == 0 && ball.y > 800){
+        printf("sutoraiku");
+    }
+    
+
+
     switch (flg_ball_pattern)
     {
     case STRAIGHT:
@@ -248,20 +307,20 @@ void *draw(void *param) {  // 描画関数
         {
             ball.yp = 15;
             flag_swing_pi = 2;
+            BallType = STRAIGHT;
         }
         break;
-
     case ZIGZAG:
         if (flag_swing_pi == 1)
         {
             ball.xp = 50;
             ball.yp = 10;
             flag_swing_pi = 2;
+            BallType = ZIGZAG;
         }
         if (ball.x <= 300 || ball.x >= 900)
             ball.xp *= -1;
         break;
-
     case DISAPPEAR:
         if (flag_swing_pi == 1)
         {
@@ -269,19 +328,19 @@ void *draw(void *param) {  // 描画関数
             flag_swing_pi = 2;
             Mix_PlayChannel(1,makyu,0);
             Mix_Volume(1,MIX_MAX_VOLUME);
+            BallType = DISAPPEAR;
         }
         if (flg_hit == 0 && ball.y >= 350 && flag_swing_pi == 2)
             flg_erase_ball = 1;
         break;
-
     case CURVE_R:
         if(flag_swing_pi == 1)
         {
-
             Mix_PlayChannel(1,curve1,1);
             Mix_Volume(1,MIX_MAX_VOLUME);
             ball.yp = 15;
             flag_swing_pi = 2;
+            BallType = CURVE_R;
         }
         if(flag_swing_pi == 2)
         {
@@ -299,11 +358,11 @@ void *draw(void *param) {  // 描画関数
     case CURVE_L:
         if(flag_swing_pi == 1)
         {
-
             Mix_PlayChannel(1,curve1,1);
              Mix_Volume(1,MIX_MAX_VOLUME);
             ball.yp = 15;
             flag_swing_pi = 2;
+            BallType = CURVE_L;
         }
         if(flag_swing_pi == 2)
         {
@@ -317,16 +376,16 @@ void *draw(void *param) {  // 描画関数
             flag_swing_pi = 3;
         }
         break;
-    
     case ACCELERATE:
         if(flag_swing_pi == 1)
         {
             ball.yp = 10;
             flag_swing_pi = 2;
+            BallType = ACCELERATE;
         }
         if(flag_swing_pi == 2)
         {
-            ball.yp += 1; 
+            ball.yp += 3; 
         }
         break;
     }
@@ -394,7 +453,7 @@ void *animeBatter() {
 
         if (count_disp >= bat_num[Batter_Speed_True]) {
             bat_disp = 0;
-            printf("last png\n");
+            count_disp = 0;
         }
     }
 }
@@ -402,12 +461,13 @@ void *animeBatter() {
 //どのバッターのスイングアニメーションを流すのかを判断する
 void animeBatter_JUDGE(void) {
     //バッターアニメーションは一度目か
-    if (Batter_key == 1) {
+    if (Batter_key == 1) {       
         Batter_key = 0;  //連続でスイングできないように初期化
         // 遅いスイングアニメーションを流す
         if (Batter_Speed == 0) {
             printf("遅い");
             SendBatter_swing();
+            Send_JUDGE();
             Batter_Speed_True = 0;
             Mix_PlayChannel(1,karaburi,0);
             Mix_Volume(1,MIX_MAX_VOLUME*10);
@@ -417,6 +477,7 @@ void animeBatter_JUDGE(void) {
         if (Batter_Speed == 1) {
             printf("普通");
             SendBatter_swing();
+            Send_JUDGE();
             Batter_Speed_True = 1;
             Mix_PlayChannel(1,karaburi,0);
             Mix_Volume(1,MIX_MAX_VOLUME*100);
@@ -425,6 +486,7 @@ void animeBatter_JUDGE(void) {
         if (Batter_Speed == 2) {
             printf("早い");
             SendBatter_swing();
+            Send_JUDGE();
             Batter_Speed_True = 2;
             Mix_PlayChannel(1,karaburi,0);
             Mix_Volume(1,MIX_MAX_VOLUME*150);

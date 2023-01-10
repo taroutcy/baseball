@@ -14,6 +14,8 @@ static int GetRandomInt(int n);
 //バットが打ち返せる四角の枠の値
 static ball_param ball = {600, 100, 10, 0, 0};
 static SDL_Rect rect_bat = {450, 500, 300, 200};
+static SDL_Rect rect_bat2 = {500, 550, 200, 100};
+static SDL_Rect rect_bat3 = {560, 560, 80, 80};
 static SDL_Point pos_ball;
 SDL_Rect strike_zone = {450, 500, 300, 200};
 
@@ -70,6 +72,9 @@ int ExecuteCommand(char command, int pos) {
             RecvIntData(pos, &intData);
             pos_ball.x = intData;
             ball.x = pos_ball.x;
+            if (pos_ball.x < 0 || pos_ball.x > 1200) {
+                // 初期化命令を送信
+            }
             break;
         case BALL_PRAM_Y:
             /* クライアント番号とIntデータを受信する */
@@ -82,6 +87,14 @@ int ExecuteCommand(char command, int pos) {
                 //Mix_PlayChannel(1,catch,0);
                 // Mix_Volume(1,MIX_MAX_VOLUME/5);   
             }
+            if (pos_ball.y < 0 || pos_ball.y > 800) {
+                // 初期化命令を送信
+                /* コマンドのセット */
+                SetCharData2DataBlock(data, RESET, &dataSize);
+
+                /* 全ユーザーに送る */
+                SendData(ALL_CLIENTS, data, dataSize);
+            }
             break;
         case Batter_Swing_COMMAND:
             dataSize = 0;
@@ -91,14 +104,29 @@ int ExecuteCommand(char command, int pos) {
 
             /* 全ユーザーに送る */
             SendData(ALL_CLIENTS, data, dataSize);
+            break;
+        case JUDGE:
+            dataSize = 0;
             
-            if (judge_swing(1, pos_ball, rect_bat)) {
+            if (judge_swing(1, pos_ball, rect_bat3)) {
+                printf("OK!!!\n");
+                /* コマンドのセット */
+                SetCharData2DataBlock(data, JUDGE_HOMERUN, &dataSize);
+
+                /* 全ユーザーに送る */
+                SendData(ALL_CLIENTS, data, dataSize);
+            }else if (judge_swing(1, pos_ball, rect_bat2)) {
+                printf("OK!!\n");
+                /* コマンドのセット */
+                SetCharData2DataBlock(data, JUDGE_TWOBASE, &dataSize);
+
+                /* 全ユーザーに送る */
+                SendData(ALL_CLIENTS, data, dataSize);
+            }else if (judge_swing(1, pos_ball, rect_bat)) {
                 printf("OK!\n");
                 /* コマンドのセット */
                 SetCharData2DataBlock(data, JUDGE_HIT, &dataSize);
 
-                //数値のセット
-                SetIntData2DataBlock(data, -10, &dataSize);
                 /* 全ユーザーに送る */
                 SendData(ALL_CLIENTS, data, dataSize);
             }

@@ -43,16 +43,19 @@ int ExecuteCommand(char command)
     case JUDGE_HIT:
         Present(1);
         y = 1; //ボールの速度を変更
-        printf("%d", intData);
+        //printf("%d", intData);
         break;
     case JUDGE_TWOBASE:
         Present(2);
+        y = 1;
         break;
     case JUDGE_HOMERUN:
         Present(3);
+        y = 1;
         break;
     case Batter_Swing_COMMAND:
         bat_disp = 1;
+        Bat_swing = 1;
         break;
     case STRAIGHT:
         flg_ball_pattern = STRAIGHT;
@@ -75,6 +78,10 @@ int ExecuteCommand(char command)
     case PITI:
         flag_swing_pi = 1;
         break;
+    case RESET:
+        flag_swing_pi = 0;
+        Reset = 1;
+        break;    
     }
     return endFlag;
 }
@@ -101,6 +108,24 @@ void SendBatter_swing(void)
     //データ送信
     SendData(data, dataSize);
 }
+
+//utetakadouka hantei
+void Send_JUDGE(void){
+    unsigned char data[MAX_DATA];
+    int dataSize;
+
+#ifndef NDEBUG
+    printf("#####\n");
+    printf("SendCircleCommand()\n");
+    printf("Send Circle Command to");
+#endif
+    dataSize = 0;
+    /* コマンドのセット */
+    SetCharData2DataBlock(data, JUDGE, &dataSize);
+    //データ送信
+    SendData(data, dataSize);
+}
+
 
 /*****************************************************************
 関数名	: SendBatter_Swing

@@ -41,6 +41,8 @@
 #define JUDGE_HIT 'H'       /* ヒットを示すコマンド */
 #define JUDGE_TWOBASE 'T'    /* ツーベースを示すコマンド */
 #define JUDGE_HOMERUN 'R'    /* ホームランを示すコマンド */
+#define RESET 'A'
+#define JUDGE 'J'
 
 #define STRAIGHT 1
 #define ZIGZAG 2
@@ -60,7 +62,8 @@ int y;
 int flg_ball_pattern; // 選択した球種
 int flg_select_ball;  // 球種選択したか
 int bat_disp;
-
+int Reset;
+int Bat_swing;
 
 //music
 Mix_Music *cheering,*start; // BGMデータ格納用構造体
