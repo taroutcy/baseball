@@ -32,6 +32,12 @@ SDL_Rect strike_zone = {450, 500, 300, 200};
 //画像関連変数
 SDL_Surface *bat[3] = {NULL, NULL, NULL}, *stadium;
 SDL_Texture *bat_tex[3], *stadium_tex;
+SDL_Surface *base1, *base2;
+SDL_Surface *light_g1, *light_g2, *light_y1, *light_y2, *light_r, *light_r2;
+SDL_Surface *tex_B, *tex_S, *tex_O;
+SDL_Texture *bg, *base_out, *base_in;
+SDL_Texture *texture_g1, *texture_g2, *texture_y1, *texture_y2, *texture_r, *texture_r2;
+SDL_Texture *B, *S, *O;
 
 int bat_num[3] = {40, 23, 16};
 // JoyConの状態を格納する変数
@@ -50,6 +56,21 @@ int Onsei_key = 1;
 
 int BallType = 0;
 
+//画像サイズ
+float sc = 2.4;	// サイズの倍率
+int base_show_x, base_show_y, base_show_w, base_show_h;
+int base_w, base_h;
+int count_x, count_y, count_w, count_h;
+int light_s;
+
+int runner = 0; //ランナー数
+int b_count = 0;    //ボール数
+int s_count = 0;    //ストライク数
+int o_count = 0;    //アウト数
+
+int i_key = 0;
+
+int base[3] = { 0, 0, 0 };
 
 void *animeBatter();
 
@@ -67,6 +88,19 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     SDL_Rect dest_rect;
 
     char title[10];
+
+    base_w = 30*sc;	// 塁の幅
+    base_h = 20*sc;	// 塁の高さ
+    base_show_w = 100*sc;	// 出塁画面の幅
+    base_show_h = 70*sc;	// 出塁画面の高さ
+    base_show_x = 1200-base_show_w-5*sc;	// 出塁画面のx座標
+    base_show_y = 800-base_show_h-5*sc;	// 出塁画面のy座標
+
+    count_w = 100*sc+2*sc;
+    count_h = 80*sc+2*sc;
+    count_x = 1200-count_w-4*sc;
+    count_y = 800-count_h-10*sc-base_show_h;
+    light_s = 18*sc;
 
     /* 引き数チェック */
     assert(0 < num && num <= MAX_CLIENTS);
@@ -136,6 +170,17 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     bat[1] = IMG_Load("picture/bat_normal.png");
     bat[2] = IMG_Load("picture/bat_fast.png");
     stadium = IMG_Load("picture/stadium.png");
+    base1 = IMG_Load("white.png");
+    base2 = IMG_Load("red.png");
+    light_g1 = IMG_Load("g1.png");
+    light_g2 = IMG_Load("g2.png");
+    light_y1 = IMG_Load("y1.png");
+    light_y2 = IMG_Load("y2.png");
+    light_r = IMG_Load("r.png");
+    light_r2 = IMG_Load("r2.png");
+    tex_B = IMG_Load("B.png");
+    tex_S = IMG_Load("S.png");
+    tex_O = IMG_Load("O.png");
 
     if (!bat[0] || !bat[1] || !bat[2] || !stadium) {
         printf("image not load");
@@ -145,6 +190,17 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     bat_tex[1] = SDL_CreateTextureFromSurface(gMainRenderer, bat[1]);
     bat_tex[2] = SDL_CreateTextureFromSurface(gMainRenderer, bat[2]);
     stadium_tex = SDL_CreateTextureFromSurface(gMainRenderer, stadium);
+    base_out = SDL_CreateTextureFromSurface(gMainRenderer, base1);
+    base_in = SDL_CreateTextureFromSurface(gMainRenderer, base2);
+    texture_g1 = SDL_CreateTextureFromSurface(gMainRenderer, light_g1);
+    texture_g2 = SDL_CreateTextureFromSurface(gMainRenderer, light_g2);
+    texture_y1 = SDL_CreateTextureFromSurface(gMainRenderer, light_y1);
+    texture_y2 = SDL_CreateTextureFromSurface(gMainRenderer, light_y2);
+    texture_r = SDL_CreateTextureFromSurface(gMainRenderer, light_r);
+    texture_r2 = SDL_CreateTextureFromSurface(gMainRenderer, light_r2);
+    B = SDL_CreateTextureFromSurface(gMainRenderer, tex_B);
+    S = SDL_CreateTextureFromSurface(gMainRenderer, tex_S);
+    O = SDL_CreateTextureFromSurface(gMainRenderer, tex_O);
 
     SDL_FreeSurface(bat[0]);
     SDL_FreeSurface(bat[1]);
@@ -156,8 +212,13 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
 
 //クライアントの勝敗の結果を画面に表示する
 void Present(int i) {
-    //白色で塗りつぶす
-    boxColor(gMainRenderer, 50, 65, 380, 400, 0xffffffff);  //
+    base[runner] = i;
+
+    for ( int j=0; j<runner ; j++) {
+    	base[j] += i;
+    }
+    
+    runner++;
 
     if(Onsei_key == 1){
         Onsei_key = 0;
@@ -216,6 +277,9 @@ void *draw(void *param) {  // 描画関数
     static int flg_erase_ball = 0;
     static int flg_hit = 0;
 
+    static int flag_over_l_edge = 0;
+    static int flag_over_r_edge = 0;
+
     gMainRenderer = (SDL_Renderer *)param;
 
     /* 描画 */
@@ -224,6 +288,9 @@ void *draw(void *param) {  // 描画関数
     SDL_Rect drawStdRect = {0, 0, 1200, 800};
 
     SDL_RenderCopy(gMainRenderer, stadium_tex, &stdRect, &drawStdRect);
+
+    Count_present();
+    Base_present();
 
     SDL_SetRenderDrawColor(gMainRenderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderDrawRect(gMainRenderer, &rect_bat);  // バット(枠)の描画 (hit)
@@ -263,6 +330,7 @@ void *draw(void *param) {  // 描画関数
         ball.yp = 0;
         Pitya_key = 1;
         y = 0;
+        i_key = 0;
     }
     if(Reset == 1){
         Batter_key = 1;
@@ -270,34 +338,71 @@ void *draw(void *param) {  // 描画関数
     }
     Reset = 0;
 
+    if(i_key == 0){
+        if (ball.x > 1200){
+            flag_over_r_edge = 1;
+            i_key = 1;
+        }
+        if (ball.x < 0) {
+            flag_over_l_edge = 1;
+            i_key = 1;
+        }
+    }
+    
     if(BallType == STRAIGHT && Bat_swing == 0 && ball.y > 800){
         printf("sutoraiku");
+        s_count++;
     }
     if(BallType == ZIGZAG && Bat_swing == 0 && ball.y > 800){
         printf("sutoraiku");
+        s_count++;
     }
     if(BallType == DISAPPEAR && Bat_swing == 0 && ball.y > 800){
         printf("ball");
+        b_count++;
     }
     if(BallType == DISAPPEAR && Bat_swing == 1 && ball.y > 800){
         printf("strike");
+        s_count++;
     }
-    if(BallType == CURVE_R && Bat_swing == 0 && (ball.x > 1200 || ball.x < 0)){
+    if(BallType == CURVE_R && Bat_swing == 0 && (flag_over_l_edge == 1 || flag_over_r_edge == 1)){
         printf("ball");
+        flag_over_l_edge = 0;
+        flag_over_r_edge = 0;
+        b_count++;
     }
-    if(BallType == CURVE_R && Bat_swing == 1 && (ball.x > 1200 || ball.x < 0)){
+    if(BallType == CURVE_R && Bat_swing == 1 && (flag_over_l_edge == 1 || flag_over_r_edge == 1)){
         printf("strike");
+        flag_over_l_edge = 0;
+        flag_over_r_edge = 0;
+        s_count++;
     }
-    if(BallType == CURVE_L && Bat_swing == 0 && (ball.x > 1200 || ball.x < 0)){
+    if(BallType == CURVE_L && Bat_swing == 0 && (flag_over_l_edge == 1 || flag_over_r_edge == 1)){
         printf("ball");
+        flag_over_l_edge = 0;
+        flag_over_r_edge = 0;
+        b_count++;
     }
-    if(BallType == CURVE_L && Bat_swing == 1 && (ball.x > 1200 || ball.x < 0)){
+    if(BallType == CURVE_L && Bat_swing == 1 && (flag_over_l_edge == 1 || flag_over_r_edge == 1)){
         printf("strike");
+        flag_over_l_edge = 0;
+        flag_over_r_edge = 0;
+        s_count++;
     }
     if(BallType == ACCELERATE && Bat_swing == 0 && ball.y > 800){
         printf("sutoraiku");
+        flag_over_l_edge = 0;
+        flag_over_r_edge = 0;
+        s_count++;
     }
     
+    if(s_count>2){
+        s_count = 0;
+        o_count++;
+    }
+    if(b_count>3){
+        b_count = 0;
+    }
 
 
     switch (flg_ball_pattern)
@@ -349,6 +454,9 @@ void *draw(void *param) {  // 描画関数
         if(flag_swing_pi == 3)
         {
             ball.xp -= 4; 
+            if (ball.xp < 0) {
+                flag_over_l_edge = 1;
+            }
         }
         if(ball.y >= 225 && flg_hit == 0){
             flag_swing_pi = 3;
@@ -371,6 +479,9 @@ void *draw(void *param) {  // 描画関数
         if(flag_swing_pi == 3)
         {
             ball.xp += 4; 
+            if (ball.xp > 1200) {
+                flag_over_r_edge = 1;
+            }
         }
         if(ball.y >= 225 && flg_hit == 0){
             flag_swing_pi = 3;
@@ -637,4 +748,101 @@ static int CheckButtonNO(int x, int y, int num) {
         }
     }
     return -1;
+}
+
+void Base_present()
+{
+    // 一塁座標
+    SDL_Rect dst_rect1 = { base_show_x+65*sc, base_show_y+35*sc, base_w, base_h };
+    // 二塁座標
+    SDL_Rect dst_rect2 = { base_show_x+base_show_w/2-base_w/2, base_show_y+10*sc, base_w, base_h };
+    // 三塁座標
+    SDL_Rect dst_rect3 = { base_show_x+5*sc, base_show_y+35*sc, base_w, base_h };
+    
+    boxColor(gMainRenderer, base_show_x-sc, base_show_y-sc, base_show_x+base_show_w+sc, base_show_y+base_show_h+sc, 0xff000000);
+    boxColor(gMainRenderer, base_show_x, base_show_y, base_show_x+base_show_w, base_show_y+base_show_h, 0xffffffff);
+
+    SDL_RenderCopy(gMainRenderer, base_out, NULL, &dst_rect1);
+    SDL_RenderCopy(gMainRenderer, base_out, NULL, &dst_rect2);
+    SDL_RenderCopy(gMainRenderer, base_out, NULL, &dst_rect3);
+    
+    for ( int j=0; j<=runner ; j++) {
+	if (base[j] == 1) {
+	    SDL_RenderCopy(gMainRenderer, base_in, NULL, &dst_rect1);
+	}
+	if (base[j] == 2) {
+	    SDL_RenderCopy(gMainRenderer, base_in, NULL, &dst_rect2);
+	}
+	if (base[j] == 3) {
+	    SDL_RenderCopy(gMainRenderer, base_in, NULL, &dst_rect3);
+	}
+    }
+}
+
+void Count_present()
+{
+    // アルファベット座標
+    SDL_Rect dst_tex_B = { count_x+7*sc, count_y+6*sc, 15*sc, 19*sc };
+    SDL_Rect dst_tex_S = { count_x+7*sc, count_y+31*sc, 15*sc, 19*sc };
+    SDL_Rect dst_tex_O = { count_x+6*sc, count_y+56*sc, 17*sc, 19*sc };
+    // ボール
+    SDL_Rect dst_B1 = { count_x+30*sc, count_y+7*sc, light_s, light_s };
+    SDL_Rect dst_B2 = { count_x+53*sc, count_y+7*sc, light_s, light_s };
+    SDL_Rect dst_B3 = { count_x+76*sc, count_y+7*sc, light_s, light_s };
+    // ストライク
+    SDL_Rect dst_S1 = { count_x+30*sc, count_y+32*sc, light_s, light_s };
+    SDL_Rect dst_S2 = { count_x+53*sc, count_y+32*sc, light_s, light_s };
+    // アウト
+    SDL_Rect dst_O1 = { count_x+30*sc, count_y+57*sc, light_s, light_s };
+    SDL_Rect dst_O2 = { count_x+53*sc, count_y+57*sc, light_s, light_s };
+    
+    // ボールカウント囲い
+    boxColor(gMainRenderer, count_x, count_y, count_x+count_w, count_y+count_h, 0xff000000);
+    	
+    SDL_RenderCopy(gMainRenderer, B, NULL, &dst_tex_B);
+    SDL_RenderCopy(gMainRenderer, S, NULL, &dst_tex_S);
+    SDL_RenderCopy(gMainRenderer, O, NULL, &dst_tex_O);
+    // ボール
+    if ( b_count == 0 ){
+        SDL_RenderCopy(gMainRenderer, texture_g2, NULL, &dst_B1);
+        SDL_RenderCopy(gMainRenderer, texture_g2, NULL, &dst_B2);
+        SDL_RenderCopy(gMainRenderer, texture_g2, NULL, &dst_B3);
+    }
+    if ( b_count == 1 ){
+        SDL_RenderCopy(gMainRenderer, texture_g1, NULL, &dst_B1);
+        SDL_RenderCopy(gMainRenderer, texture_g2, NULL, &dst_B2);
+        SDL_RenderCopy(gMainRenderer, texture_g2, NULL, &dst_B3);
+    }
+    if ( b_count == 2 ){
+        SDL_RenderCopy(gMainRenderer, texture_g1, NULL, &dst_B1);
+        SDL_RenderCopy(gMainRenderer, texture_g1, NULL, &dst_B2);
+        SDL_RenderCopy(gMainRenderer, texture_g2, NULL, &dst_B3);
+    }
+    if ( b_count == 3 ){
+        SDL_RenderCopy(gMainRenderer, texture_g1, NULL, &dst_B1);
+        SDL_RenderCopy(gMainRenderer, texture_g1, NULL, &dst_B2);
+        SDL_RenderCopy(gMainRenderer, texture_g1, NULL, &dst_B3);
+    }
+    // ストライク
+    if ( s_count == 0 ){
+        SDL_RenderCopy(gMainRenderer, texture_y2, NULL, &dst_S1);
+        SDL_RenderCopy(gMainRenderer, texture_y2, NULL, &dst_S2);
+    }
+    if ( s_count == 1 ){
+        SDL_RenderCopy(gMainRenderer, texture_y1, NULL, &dst_S1);
+        SDL_RenderCopy(gMainRenderer, texture_y2, NULL, &dst_S2);
+    }
+    if ( s_count == 2 ){
+        SDL_RenderCopy(gMainRenderer, texture_y1, NULL, &dst_S1);
+        SDL_RenderCopy(gMainRenderer, texture_y1, NULL, &dst_S2);
+    }
+    // アウト
+    if ( o_count == 0 ){
+        SDL_RenderCopy(gMainRenderer, texture_r, NULL, &dst_O1);
+        SDL_RenderCopy(gMainRenderer, texture_r, NULL, &dst_O2);
+    }
+    if ( o_count == 1 ){
+        SDL_RenderCopy(gMainRenderer, texture_r2, NULL, &dst_O1);
+        SDL_RenderCopy(gMainRenderer, texture_r, NULL, &dst_O2);
+    }
 }
