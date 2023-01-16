@@ -35,9 +35,13 @@ SDL_Texture *bat_tex[3], *stadium_tex;
 SDL_Surface *base1, *base2;
 SDL_Surface *light_g1, *light_g2, *light_y1, *light_y2, *light_r, *light_r2;
 SDL_Surface *tex_B, *tex_S, *tex_O;
+SDL_Surface *hit1, *hit2, *hit3;
+SDL_Surface *text_p, *text_b, *text_s, *text_o, *text_w, *text_l;
 SDL_Texture *bg, *base_out, *base_in;
 SDL_Texture *texture_g1, *texture_g2, *texture_y1, *texture_y2, *texture_r, *texture_r2;
 SDL_Texture *B, *S, *O;
+SDL_Texture *HIT1, *HIT2, *HOME;
+SDL_Texture *play, *strike, *ba, *out, *win, *lose;
 
 int bat_num[3] = {40, 23, 16};
 // JoyConの状態を格納する変数
@@ -72,7 +76,16 @@ int i_key = 0;
 
 int base[3] = { 0, 0, 0 };
 
-ball_count receive;
+int text_num = 0;
+int flg_judge = 0;
+
+int previous_time=0, current_time;
+
+// ball_count receive;
+
+ball_count pre = { 0, 0, 0 };
+
+int c_id;
 
 void *animeBatter();
 
@@ -183,6 +196,23 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     tex_B = IMG_Load("B.png");
     tex_S = IMG_Load("S.png");
     tex_O = IMG_Load("O.png");
+    hit1 = IMG_Load("hit.png");
+    hit2 = IMG_Load("double.png");
+    hit3 = IMG_Load("homerun.png");
+    text_p =IMG_Load("play.png");
+    text_b =IMG_Load("ball.png");
+    text_s =IMG_Load("strike.png");hit1 = IMG_Load("hit.png");
+    hit2 = IMG_Load("double.png");
+    hit3 = IMG_Load("homerun.png");
+    text_p =IMG_Load("play.png");
+    text_b =IMG_Load("ball.png");
+    text_s =IMG_Load("strike.png");
+    text_o =IMG_Load("out.png");
+    text_w =IMG_Load("win.png");
+    text_l =IMG_Load("lose.png");
+    text_o =IMG_Load("out.png");
+    text_w =IMG_Load("win.png");
+    text_l =IMG_Load("lose.png");
 
     if (!bat[0] || !bat[1] || !bat[2] || !stadium) {
         printf("image not load");
@@ -203,11 +233,40 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     B = SDL_CreateTextureFromSurface(gMainRenderer, tex_B);
     S = SDL_CreateTextureFromSurface(gMainRenderer, tex_S);
     O = SDL_CreateTextureFromSurface(gMainRenderer, tex_O);
+    HIT1 = SDL_CreateTextureFromSurface(gMainRenderer, hit1);
+    HIT2 = SDL_CreateTextureFromSurface(gMainRenderer, hit2);
+    HOME = SDL_CreateTextureFromSurface(gMainRenderer, hit3);
+    play = SDL_CreateTextureFromSurface(gMainRenderer, text_p);
+    strike = SDL_CreateTextureFromSurface(gMainRenderer, text_s);
+    ba = SDL_CreateTextureFromSurface(gMainRenderer, text_b);
+    out = SDL_CreateTextureFromSurface(gMainRenderer, text_o);
+    win = SDL_CreateTextureFromSurface(gMainRenderer, text_w);
+    lose = SDL_CreateTextureFromSurface(gMainRenderer, text_l);
 
     SDL_FreeSurface(bat[0]);
     SDL_FreeSurface(bat[1]);
     SDL_FreeSurface(bat[2]);
     SDL_FreeSurface(stadium);
+    SDL_FreeSurface(base1);
+    SDL_FreeSurface(base2);
+    SDL_FreeSurface(light_g1);
+    SDL_FreeSurface(light_g2);
+    SDL_FreeSurface(light_y1);
+    SDL_FreeSurface(light_y2);
+    SDL_FreeSurface(light_r);
+    SDL_FreeSurface(light_r2);
+    SDL_FreeSurface(tex_B);
+    SDL_FreeSurface(tex_S);
+    SDL_FreeSurface(tex_O);
+    SDL_FreeSurface(hit1);
+    SDL_FreeSurface(hit2);
+    SDL_FreeSurface(hit3);
+    SDL_FreeSurface(text_p);
+    SDL_FreeSurface(text_s);
+    SDL_FreeSurface(text_b);
+    SDL_FreeSurface(text_o);
+    SDL_FreeSurface(text_w);
+    SDL_FreeSurface(text_l);
 
     SDL_RenderPresent(gMainRenderer);  //描写
 }
@@ -233,9 +292,12 @@ void Present(int i) {
             Mix_PlayChannel(1, hit, 0); 
         }else if(i == 4){
             printf("homerun");
-            Mix_PlayChannel(1, hit, 0); 
+            Mix_PlayChannel(1, hit, 0);
+            flg_judge = 2;
         }
     }
+    /*text_num = i;
+    previous_time = SDL_GetTicks();*/
 }
 
 /*****************************************************************
@@ -270,7 +332,7 @@ Uint32 draw_timer(Uint32 interval, void *param) {
 static ball_param ball = {600, 100, 10, 0, 0};
 static SDL_Rect rect_bat = {450, 500, 300, 200};
 static SDL_Rect rect_bat2 = {500, 550, 200, 100};
-static SDL_Rect rect_bat3 = {560, 560, 80, 80};
+static SDL_Rect rect_bat3 = {580, 580, 40, 40};
 static SDL_Point pos_ball;
 
 //割り込みで呼び出す描写関数
@@ -300,6 +362,46 @@ void *draw(void *param) {  // 描画関数
     SDL_RenderDrawRect(gMainRenderer, &rect_bat2);  // バット(枠)の描画 (Two)
     SDL_SetRenderDrawColor(gMainRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderDrawRect(gMainRenderer, &rect_bat3);  // バット(枠)の描画 (three)
+
+    /*if (pre.strike != count.strike){
+        pre.strike = count.strike;
+        text_num = 5;
+        previous_time = SDL_GetTicks();
+    }
+    if (pre.ball != count.ball){
+        pre.ball = count.ball;
+        text_num = 6;
+        previous_time = SDL_GetTicks();
+    }
+    if (pre.out != count.out){
+        pre.out = count.out;
+        text_num = 7;
+        previous_time = SDL_GetTicks();
+    }*/
+
+    /*current_time = SDL_GetTicks(); // 経過時間を整数型変数に格納
+    if (current_time < previous_time + 2000){ // 前のタイミングから2秒間
+        Text(text_num);
+    }*/
+    /*if ( count.out >2 ) {
+        flg_judge = 1;
+    }*/
+    if (flg_judge == 2){
+        if (c_id == 0){
+            Text(10);
+        }
+        if (c_id == 1){
+            Text(11);
+        }
+    }
+    if (flg_judge == 1){
+        if (c_id == 0){
+            Text(11);
+        }
+        if (c_id == 1){
+            Text(10);
+        }
+    }
         
 
     if (flg_erase_ball == 0)
@@ -642,6 +744,7 @@ void WindowEvent(int num, int clientID) {
     SDL_Event event;
     SDL_MouseButtonEvent *mouse;
     int buttonNO;
+    c_id = clientID;
 
     joycon_get_state(&jc);
 
@@ -903,5 +1006,39 @@ void Count_present()
     if ( count.out == 2 ){
         SDL_RenderCopy(gMainRenderer, texture_r2, NULL, &dst_O1);
         SDL_RenderCopy(gMainRenderer, texture_r2, NULL, &dst_O2);
+    }
+}
+
+void Text(int i)
+{
+    SDL_Rect tex = { 370, 300, 470, 200 };
+    
+    if( i==1 ){
+        SDL_RenderCopy(gMainRenderer, HIT1, NULL, &tex);
+    }
+    if( i==2 ){
+        SDL_RenderCopy(gMainRenderer, HIT2, NULL, &tex);
+    }
+    if( i==4 ){
+        SDL_RenderCopy(gMainRenderer, HOME, NULL, &tex);
+    }
+    
+    if( i==5 ){
+        SDL_RenderCopy(gMainRenderer, strike, NULL, &tex);
+    }
+    if( i==6 ){
+        SDL_RenderCopy(gMainRenderer, ba, NULL, &tex);
+    }
+    if( i==7 ){
+        SDL_RenderCopy(gMainRenderer, out, NULL, &tex);
+    }
+    if( i==10 ){
+        SDL_RenderCopy(gMainRenderer, win, NULL, &tex);
+    }
+    if( i==11 ){
+        SDL_RenderCopy(gMainRenderer, lose, NULL, &tex);
+    }
+    if( i==0 ){
+        SDL_RenderCopy(gMainRenderer, play, NULL, &tex);
     }
 }

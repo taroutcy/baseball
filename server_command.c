@@ -15,7 +15,7 @@ static int GetRandomInt(int n);
 static ball_param ball = {600, 100, 10, 0, 0};
 static SDL_Rect rect_bat = {450, 500, 300, 200};
 static SDL_Rect rect_bat2 = {500, 550, 200, 100};
-static SDL_Rect rect_bat3 = {560, 560, 80, 80};
+static SDL_Rect rect_bat3 = {580, 580, 40, 40};
 static SDL_Point pos_ball;
 SDL_Rect strike_zone = {450, 500, 300, 200};
 
