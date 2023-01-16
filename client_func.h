@@ -32,6 +32,8 @@ extern void WindowEvent(int num,int clientID);
 extern void Present(int i);
 extern void Base_present();
 extern void Count_present();
+extern ball_count count;
+extern runners_list runners_recv;
 
 //タイマ処理によって描写関数を呼び出す
 extern Uint32 draw_timer(Uint32 interval, void *param);

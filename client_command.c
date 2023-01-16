@@ -15,6 +15,9 @@ int key2 = 1;
 
 int ball_y = 0;
 
+ball_count count = {0, 0, 0};
+runners_list runners_recv = {0, 0, 0};
+
 /*****************************************************************
 関数名	: ExecuteCommand
 機能	: サーバーから送られてきたコマンドを元に，
@@ -35,6 +38,7 @@ int ExecuteCommand(char command)
     //key変数のリセット
     key1 = 1;
     key2 = 1;
+    // printf("command: %c\n", command);
     switch (command)
     {
     case END_COMMAND:
@@ -50,7 +54,7 @@ int ExecuteCommand(char command)
         y = 1;
         break;
     case JUDGE_HOMERUN:
-        Present(3);
+        Present(4);
         y = 1;
         break;
     case Batter_Swing_COMMAND:
@@ -76,13 +80,39 @@ int ExecuteCommand(char command)
         flg_ball_pattern = ACCELERATE;
         break;
     case PITI:
-        flag_swing_pi = 1;
+        ball_state = 1;
         break;
     case RESET:
-        flag_swing_pi = 0;
+        ball_state = 0;
         Reset = 1;
-        break;    
+        break;
+    case BALL:
+        RecvIntData(&count.ball);
+        //printf("ball: %d\n", count.ball);
+        break;
+    case STRIKE:
+        RecvIntData(&count.strike);
+        //printf("strike: %d\n", count.strike);
+        break;
+    case OUT:
+        RecvIntData(&count.out);
+        //printf("out: %d\n", count.out);
+        break;
+    case FIRST:
+        RecvIntData(&runners_recv.first);
+        //printf("first: %d\n", runners_recv.first);
+        break;
+    case SECOND:
+        RecvIntData(&runners_recv.second);
+        //printf("second: %d\n", runners_recv.second);
+        break;
+    case THIRD:
+        RecvIntData(&runners_recv.third);
+        //printf("third: %d\n", runners_recv.third);
+        break;
     }
+    printf("\n");
+    
     return endFlag;
 }
 

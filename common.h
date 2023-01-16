@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <assert.h>
 #include <math.h>
+#include <stdbool.h>
 #include <SDL2/SDL.h> // SDLを用いるために必要なヘッダファイルをインクルード
 #include <SDL2/SDL_mixer.h> // SDLでサウンドを用いるために必要なヘッダファイルをインクルード
 
@@ -44,6 +45,12 @@
 #define RESET 'A'
 #define JUDGE 'J'
 
+#define SEND_COUNT 'C'
+#define STRIKE 's'
+#define BALL 'b'
+#define OUT 'o'
+
+#define NONE -1
 #define STRAIGHT 1
 #define ZIGZAG 2
 #define DISAPPEAR 3
@@ -51,19 +58,29 @@
 #define CURVE_L 5
 #define ACCELERATE 6
 
+#define FIRST 'f'
+#define SECOND 'z'
+#define THIRD 't'
+
 SDL_Renderer *gMainRenderer;
 
 // timerID
 SDL_TimerID my_timer_id;
 SDL_TimerID my_timer_id_bat;
 
-int flag_swing_pi;
+int ball_state;
 int y;
 int flg_ball_pattern; // 選択した球種
 int flg_select_ball;  // 球種選択したか
 int bat_disp;
 int Reset;
 int Bat_swing;
+
+typedef struct { // ボールカウント格納用
+    int ball; 
+    int strike;
+    int out;
+} ball_count;
 
 //music
 Mix_Music *cheering,*start; // BGMデータ格納用構造体
@@ -77,5 +94,11 @@ typedef struct // ボール用構造体
     int xp; // 移動量(座標をどれだけ変化させるか)
     int yp;
 } ball_param;
+
+typedef struct {
+    bool first;
+    bool second;
+    bool third;
+} runners_list;
 
 #endif
