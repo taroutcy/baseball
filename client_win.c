@@ -14,6 +14,7 @@
 
 static SDL_Window *gMainWindow;
 static SDL_Rect gButtonRect[MAX_CLIENTS + 2];
+static int CheckButtonNO(int x, int y, int num);
 
 //野球の描写および打つ判定の関数
 void *draw(void *param);
@@ -56,7 +57,7 @@ int Onsei_key = 1;
 
 int BallType = 0;
 
-//画像サイズ
+//画像サイズ shimomura
 float sc = 2.4;	// サイズの倍率
 int base_show_x, base_show_y, base_show_w, base_show_h;
 int base_w, base_h;
@@ -69,7 +70,6 @@ int s_count = 0;    //ストライク数
 int o_count = 0;    //アウト数
 
 int i_key = 0;
-
 int base[3] = { 0, 0, 0 };
 
 ball_count receive;
@@ -91,6 +91,7 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
 
     char title[10];
 
+    // shimomura
     base_w = 30*sc;	// 塁の幅
     base_h = 20*sc;	// 塁の高さ
     base_show_w = 100*sc;	// 出塁画面の幅
@@ -214,7 +215,7 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
 
 //クライアントの勝敗の結果を画面に表示する
 void Present(int i) {
-    base[runner] = i;
+       base[runner] = i;
 
     for ( int j=0; j<runner ; j++) {
     	base[j] += i;
@@ -278,10 +279,8 @@ void *draw(void *param) {  // 描画関数
 
     static int flg_erase_ball = 0;
     static int flg_hit = 0;
-
     static int flag_over_l_edge = 0;
     static int flag_over_r_edge = 0;
-
     gMainRenderer = (SDL_Renderer *)param;
 
     /* 描画 */
@@ -325,6 +324,7 @@ void *draw(void *param) {  // 描画関数
     if (!(SDL_PointInRect(&pos_ball, &rect_bat))) {
         flg_swing = 0;
     }
+
     if (ball_state == 0) {
         ball.x = 600;
         ball.y = 100;
@@ -352,77 +352,8 @@ void *draw(void *param) {  // 描画関数
         }
     }
     
-
-    // ---------------
-    // if(BallType == STRAIGHT && Bat_swing == 0 && ball.y > 800){
-    //     printf("strike 1\n");
-    //     s_count++;
-    // }
-    // if(BallType == ZIGZAG && Bat_swing == 0 && ball.y > 800){
-    //     printf("strike 2\n");
-    //     s_count++;
-    // }
-
-    // // Judge Disapper Ball
-    // if(BallType == DISAPPEAR && ball.y > 800) {
-    //     switch (Bat_swing) {
-    //         case 0:
-    //             printf("ball of disapper\n");
-    //             b_count++;
-    //             break;
-    //         case 1:
-    //             printf("strike of disapper\n");
-    //             s_count++;
-    //             break;
-    //     }
-
-    // }
-
-    // // Judge Right Curve
-    // if(BallType == CURVE_R  && (ball.x < 0 || ball.x > 1200)){ 
-    //     switch (Bat_swing){
-    //         case 0:
-    //             printf("ball of right curve\n");
-    //             b_count++;
-    //             break;
-    //         case 1:
-    //             printf("strike of right curve\n");
-    //             s_count++;
-    //             break;
-    //     }
-    //     flag_over_l_edge = 0;
-    //     flag_over_r_edge = 0;
-    // }
-    // //if(BallType == CURVE_L && Bat_swing == 0 && (flag_over_l_edge == 1 || flag_over_r_edge == 1)){
-    // if(BallType == CURVE_L && Bat_swing == 0 && (ball.x < 0 || ball.x > 1200)){
-    //     printf("ball 3\n");
-    //     flag_over_l_edge = 0;
-    //     flag_over_r_edge = 0;
-    //     b_count++;
-    // }
-    // //if(BallType == CURVE_L && Bat_swing == 1 && (flag_over_l_edge == 1 || flag_over_r_edge == 1)){
-    // if(BallType == CURVE_L && Bat_swing == 1 && (ball.x < 0 || ball.x > 1200)){
-    //     printf("strike 5\n");
-    //     flag_over_l_edge = 0;
-    //     flag_over_r_edge = 0;
-    //     s_count++;
-    // }
     
-    // if(BallType == ACCELERATE && Bat_swing == 0 && ball.y > 800){
-    //     printf("strike 6\n");
-    //     flag_over_l_edge = 0;
-    //     flag_over_r_edge = 0;
-    //     s_count++;
-    // }
-    
-    // if(s_count > 2){
-    //     s_count = 0;
-    //     o_count++;
-    // }
-    // if(b_count > 3){
-    //     b_count = 0;
-    // }
-    //-------------------------- 
+
 
     switch (flg_ball_pattern)
     {
@@ -746,7 +677,31 @@ void WindowEvent(int num, int clientID) {
     SDL_Delay(10);
 }
 
+/*****
+static
+*****/
+/*****************************************************************
+関数名	: CheckButtonNO
+機能	: クリックされたボタンの番号を返す
+引数	: int	   x		: マウスの押された x 座標
+          int	   y		: マウスの押された y 座標
+          char	   num		: 全クライアント数
+出力	: 押されたボタンの番号を返す
+          ボタンが押されていない時は-1を返す
+*****************************************************************/
+static int CheckButtonNO(int x, int y, int num) {
+    int i;
 
+    for (i = 0; i < num + 2; i++) {
+        if (gButtonRect[i].x < x &&
+            gButtonRect[i].y < y &&
+            gButtonRect[i].x + gButtonRect[i].w > x &&
+            gButtonRect[i].y + gButtonRect[i].h > y) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 void Base_present()
 {

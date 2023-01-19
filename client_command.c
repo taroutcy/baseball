@@ -37,7 +37,6 @@ int ExecuteCommand(char command)
     //key変数のリセット
     key1 = 1;
     key2 = 1;
-    // printf("command: %c\n", command);
     switch (command)
     {
     case END_COMMAND:
@@ -108,10 +107,8 @@ int ExecuteCommand(char command)
     case THIRD:
         RecvIntData(&runners_recv.third);
         //printf("third: %d\n", runners_recv.third);
-        break;
+        break;   
     }
-    printf("\n");
-    
     return endFlag;
 }
 

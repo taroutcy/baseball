@@ -116,14 +116,13 @@ int ExecuteCommand(char command, int pos) {
                 // Mix_Volume(1,MIX_MAX_VOLUME/5);   
             }
             */
-            
             if (pos_ball.y < 0 || pos_ball.y > 800) {
                 // 初期化命令を送信
-                /* コマンドのセット */
-                SetCharData2DataBlock(data, RESET, &dataSize);
-                
+                // コマンドのセット 
+                // SetCharData2DataBlock(data, RESET, &dataSize);
+
                 // カウント送信のフラグ初期化
-                flg_send_count = 0;
+                //flg_send_count = 0;
 
                 // 全ユーザーに送る
                 // SendData(ALL_CLIENTS, data, dataSize);
@@ -141,17 +140,11 @@ int ExecuteCommand(char command, int pos) {
             dataSize = 0;
             
             if (judge_swing(1, pos_ball, rect_bat3)) {
-                // printf("OK!!!\n");
+                //printf("OK!!!\n");
                 /* コマンドのセット */
-                // SetCharData2DataBlock(data, JUDGE_HOMERUN, &dataSize);
                 // SetCharData2DataBlock(data, JUDGE_HOMERUN, &dataSize);
 
                 /* 全ユーザーに送る */
-                // SendData(ALL_CLIENTS, data, dataSize);
-
-                b_count = 0;
-                s_count = 0;
-
                 // SendData(ALL_CLIENTS, data, dataSize);
 
                 b_count = 0;
@@ -168,15 +161,12 @@ int ExecuteCommand(char command, int pos) {
 
                 b_count = 0;
                 s_count = 0;
-                // printf("OK!!\n");
+                //printf("OK!!\n");
                 /* コマンドのセット */
-                // SetCharData2DataBlock(data, JUDGE_TWOBASE, &dataSize);
-
                 // SetCharData2DataBlock(data, JUDGE_TWOBASE, &dataSize);
 
 
                 /* 全ユーザーに送る */
-                // SendData(ALL_CLIENTS, data, dataSize);
                 // SendData(ALL_CLIENTS, data, dataSize);
             }else if (judge_swing(1, pos_ball, rect_bat)) {
                 if(runners.first) {
@@ -195,13 +185,11 @@ int ExecuteCommand(char command, int pos) {
                 b_count = 0;
                 s_count = 0;
 
-                // printf("OK!\n");
+                //printf("OK!\n");
                 /* コマンドのセット */
-                // SetCharData2DataBlock(data, JUDGE_HIT, &dataSize);
                 // SetCharData2DataBlock(data, JUDGE_HIT, &dataSize);
 
                 /* 全ユーザーに送る */
-                // SendData(ALL_CLIENTS, data, dataSize);
                 // SendData(ALL_CLIENTS, data, dataSize);
             }
 
@@ -222,38 +210,47 @@ int ExecuteCommand(char command, int pos) {
 
             // "3塁のランナーを送信するという合図"を送信する
             SetCharData2DataBlock(data, THIRD, &dataSize);
-            SendData(ALL_CLIENTS, data, dataSize);  
+            SendData(ALL_CLIENTS, data, dataSize);
             //　3塁のランナーの数をセット
             SetIntData2DataBlock(data, runners.third, &dataSize);
             SendData(ALL_CLIENTS, data, dataSize); 
 
             // "ボールを送信するという合図"を送信する
-        SetCharData2DataBlock(data, BALL, &dataSize);
-        SendData(ALL_CLIENTS, data, dataSize);  
+            SetCharData2DataBlock(data, BALL, &dataSize);
+            SendData(ALL_CLIENTS, data, dataSize);  
 
-        //ボールの数をセット
-        SetIntData2DataBlock(data, b_count, &dataSize);
-        SendData(ALL_CLIENTS, data, dataSize);
-        printf("ball: %d\n", b_count);
+            //ボールの数をセット
+            SetIntData2DataBlock(data, b_count, &dataSize);
+            SendData(ALL_CLIENTS, data, dataSize);
+            printf("ball: %d\n", b_count);
 
-        // "ストライクを送信するという合図"を送信する
-        SetCharData2DataBlock(data, STRIKE, &dataSize);
-        SendData(ALL_CLIENTS, data, dataSize);  
-        //ストライクの数をセット
-        SetIntData2DataBlock(data, s_count, &dataSize);
-        SendData(ALL_CLIENTS, data, dataSize); 
-        printf("strike: %d\n", s_count);
+            // "ストライクを送信するという合図"を送信する
+            SetCharData2DataBlock(data, STRIKE, &dataSize);
+            SendData(ALL_CLIENTS, data, dataSize);  
+            //ストライクの数をセット
+            SetIntData2DataBlock(data, s_count, &dataSize);
+            SendData(ALL_CLIENTS, data, dataSize); 
+            printf("strike: %d\n", s_count);
 
-        // "アウトを送信するという合図"を送信する
-        SetCharData2DataBlock(data, OUT, &dataSize);
-        SendData(ALL_CLIENTS, data, dataSize);  
-        //アウトの数をセット
-        SetIntData2DataBlock(data, o_count, &dataSize);
-        SendData(ALL_CLIENTS, data, dataSize); 
-        printf("out: %d\n", o_count);
-        printf("\n");
+            // "アウトを送信するという合図"を送信する
+            SetCharData2DataBlock(data, OUT, &dataSize);
+            SendData(ALL_CLIENTS, data, dataSize);  
+            //アウトの数をセット
+            SetIntData2DataBlock(data, o_count, &dataSize);
+            SendData(ALL_CLIENTS, data, dataSize); 
+            printf("out: %d\n", o_count);
+            printf("\n");
 
-        //flg_send_count = 1;
+            // 初期化命令を送信
+            //コマンドのセット 
+            SetCharData2DataBlock(data, RESET, &dataSize);
+
+            // カウント送信のフラグ初期化
+            flg_send_count = 1;
+
+            //全ユーザーに送る
+            SendData(ALL_CLIENTS, data, dataSize);
+            
             break;
 
         case PITI:
@@ -266,6 +263,7 @@ int ExecuteCommand(char command, int pos) {
 
             break;
         case STRAIGHT:
+
             BallType = STRAIGHT;
             dataSize = 0;
 
@@ -277,7 +275,6 @@ int ExecuteCommand(char command, int pos) {
             break;
         case ZIGZAG:
             BallType = ZIGZAG;
-            BallType = ZIGZAG;
             dataSize = 0;
 
             //数値のセット
@@ -286,7 +283,6 @@ int ExecuteCommand(char command, int pos) {
             SendData(ALL_CLIENTS, data, dataSize);    
             break;  
         case DISAPPEAR:
-            BallType = DISAPPEAR;
             BallType = DISAPPEAR;
             dataSize = 0;
 
@@ -297,7 +293,6 @@ int ExecuteCommand(char command, int pos) {
             break; 
         case CURVE_R:
             BallType = CURVE_R;
-            BallType = CURVE_R;
             dataSize = 0;
 
             //数値のセット
@@ -306,7 +301,6 @@ int ExecuteCommand(char command, int pos) {
             SendData(ALL_CLIENTS, data, dataSize);    
             break;  
         case CURVE_L:
-            BallType = CURVE_L;
             BallType = CURVE_L;
             dataSize = 0;
 
@@ -317,17 +311,16 @@ int ExecuteCommand(char command, int pos) {
             break;
         case ACCELERATE:
             BallType = ACCELERATE;
-            BallType = ACCELERATE;
             dataSize = 0;
 
             //数値のセット
             SetCharData2DataBlock(data, command, &dataSize);
             /* 全ユーザーに送る */
             SendData(ALL_CLIENTS, data, dataSize);    
-            break;    
+            break;   
         case NONE:
             BallType = NONE;
-            break;
+            break; 
         default:
             /* 未知のコマンドが送られてきた */
             fprintf(stderr, "0x%02x is not command!\n", command);
@@ -346,8 +339,22 @@ int ExecuteCommand(char command, int pos) {
     //     printf("strike 6\n");
     //     s_count++;
     // }
-
+    printf("flg value is %d, BallType is %d\n", flg_send_count, BallType);
     if(!SDL_PointInRect(&pos_ball, &windowSize) && flg_send_count == 0) {
+        printf("reset start\n");
+        
+        if(!Batter_key) {
+            // 初期化命令を送信
+            //コマンドのセット 
+            SetCharData2DataBlock(data, RESET, &dataSize);
+
+            // カウント送信のフラグ初期化
+            flg_send_count = 0;
+
+            //全ユーザーに送る
+            SendData(ALL_CLIENTS, data, dataSize);
+
+        }
         printf("ball type: %d\n", BallType);
         switch (BallType) {
             case STRAIGHT:
@@ -388,6 +395,22 @@ int ExecuteCommand(char command, int pos) {
         if(b_count > 3){
             b_count = 0;
             s_count = 0;
+            if (runners.third) {
+                if (runners.second) {
+                    runners.first = true;
+                } else {
+                    runners.second = true;
+                }
+            }  else if (runners.second) {
+                if (runners.first) {
+                    runners.third = true;
+                } 
+                runners.first = true;
+            } else if (runners.first) {
+                runners.second = true;
+            } else {
+                runners.first = true;
+            }
         }
 
         // "ボールを送信するという合図"を送信する
