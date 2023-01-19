@@ -18,6 +18,11 @@ int ball_y = 0;
 ball_count count = {0, 0, 0};
 runners_list runners_recv = {0, 0, 0};
 
+ball_count count = {0, 0, 0};
+runners_list runners_recv = {0, 0, 0};
+
+ball_count count = {0, 0, 0};
+runners_list runners_recv = {0, 0, 0};
 /*****************************************************************
 関数名	: ExecuteCommand
 機能	: サーバーから送られてきたコマンドを元に，
@@ -55,6 +60,7 @@ int ExecuteCommand(char command)
         break;
     case JUDGE_HOMERUN:
         Present(4);
+        Present(4);
         y = 1;
         break;
     case Batter_Swing_COMMAND:
@@ -81,8 +87,10 @@ int ExecuteCommand(char command)
         break;
     case PITI:
         ball_state = 1;
+        ball_state = 1;
         break;
     case RESET:
+        ball_state = 0;
         ball_state = 0;
         Reset = 1;
         break;

@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build sample",// このタスクの名前
+            "type": "shell",        // 実行方法，通常はshell
+            "command": "make",      // 実行するコマンド
+            "args": [],             // コマンドの引数
+            "group": {              // タスクのグループ，通常は記載の通り
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": {     // エラー表示の設定    
+                "owner": "c",
+                "pattern":[
+                    {
+                        "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "column": 3,
+                        "severity": 4,
+                        "message": 5
+                    }
+                ]
+            }
+        }
+    ]
+}

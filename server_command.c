@@ -15,9 +15,15 @@ static int GetRandomInt(int n);
 static ball_param ball = {600, 100, 10, 0, 0};
 static SDL_Rect rect_bat = {450, 500, 300, 200};
 static SDL_Rect rect_bat2 = {500, 550, 200, 100};
-static SDL_Rect rect_bat3 = {560, 560, 80, 80};
+static SDL_Rect rect_bat3 = {580, 580, 40, 40};
 static SDL_Point pos_ball;
 SDL_Rect strike_zone = {450, 500, 300, 200};
+
+SDL_Rect windowSize = {0, 0, 1200, 800};
+SDL_Point ballPlace = {0, 0};
+
+runners_list runners = {false, false, false};
+
 
 SDL_Rect windowSize = {0, 0, 1200, 800};
 SDL_Point ballPlace = {0, 0};
@@ -56,6 +62,10 @@ int ExecuteCommand(char command, int pos) {
 
     static int BallType = 0;
     static int s_count = 0, b_count = 0, o_count = 0;
+    static int flg_send_count = 0;
+
+    static int BallType = 0;
+    static int s_count = 0, b_count = 0, o_count = 0;
 
     /* 引き数チェック */
     assert(0 <= pos && pos < MAX_CLIENTS);
@@ -65,6 +75,9 @@ int ExecuteCommand(char command, int pos) {
     printf("ExecuteCommand()\n");
     printf("Get command %c\n", command);
 #endif
+    if (command != BALL_PRAM_X && command != BALL_PRAM_Y){
+        printf("i receive %c from clients.\n", command);
+    }
     switch (command) {
         case END_COMMAND:
             dataSize = 0;
@@ -80,23 +93,40 @@ int ExecuteCommand(char command, int pos) {
         case BALL_PRAM_X:
             /* クライアント番号とIntデータを受信する */
             RecvIntData(pos, &intData);
-            pos_ball.x = intData;
-            ball.x = pos_ball.x;
-            if (pos_ball.x < 0 || pos_ball.x > 1200) {
+            if (0 <= pos_ball.x || pos_ball.x <= 1200) {
+                pos_ball.x = intData;
+                ball.x = pos_ball.x;
                 // 初期化命令を送信
+            } else {
+                flg_send_count = 0;
+            }
+            if(SDL_PointInRect(&pos_ball, &rect_bat)){
+                flg_send_count = 0;
             }
             break;
         case BALL_PRAM_Y:
             /* クライアント番号とIntデータを受信する */
             RecvIntData(pos, &intData);
-            pos_ball.y = intData;
-            ball.y = pos_ball.y;
+            if (0 <= pos_ball.y || pos_ball.y <= 800) {
+                pos_ball.y = intData;
+                ball.y = pos_ball.y;
+                // 初期化命令を送信
+            } else {
+                flg_send_count = 0;
+            }
+
+            if(SDL_PointInRect(&pos_ball, &rect_bat)){
+                flg_send_count = 0;
+            }
+
             //ストライクでません　
+            /*if (judge_strike(1, ball, rect_bat)) {  // ストライク判定(仮)
             /*if (judge_strike(1, ball, rect_bat)) {  // ストライク判定(仮)
                 printf("ストライク\n");
                 //Mix_PlayChannel(1,catch,0);
                 // Mix_Volume(1,MIX_MAX_VOLUME/5);   
             }
+            */
             */
             if (pos_ball.y < 0 || pos_ball.y > 800) {
                 // 初期化命令を送信
@@ -106,12 +136,11 @@ int ExecuteCommand(char command, int pos) {
                 // カウント送信のフラグ初期化
                 flg_send_count = 0;
 
-                /* 全ユーザーに送る */
-                SendData(ALL_CLIENTS, data, dataSize);
+                // 全ユーザーに送る
+                // SendData(ALL_CLIENTS, data, dataSize);
             }
             break;
         case Batter_Swing_COMMAND:
-            dataSize = 0;
             printf("Batter Swing\n");
             /* コマンドのセット */
             SetCharData2DataBlock(data, command, &dataSize);
@@ -126,8 +155,14 @@ int ExecuteCommand(char command, int pos) {
                 // printf("OK!!!\n");
                 /* コマンドのセット */
                 // SetCharData2DataBlock(data, JUDGE_HOMERUN, &dataSize);
+                // SetCharData2DataBlock(data, JUDGE_HOMERUN, &dataSize);
 
                 /* 全ユーザーに送る */
+                // SendData(ALL_CLIENTS, data, dataSize);
+
+                b_count = 0;
+                s_count = 0;
+
                 // SendData(ALL_CLIENTS, data, dataSize);
 
                 b_count = 0;
@@ -148,8 +183,11 @@ int ExecuteCommand(char command, int pos) {
                 /* コマンドのセット */
                 // SetCharData2DataBlock(data, JUDGE_TWOBASE, &dataSize);
 
+                // SetCharData2DataBlock(data, JUDGE_TWOBASE, &dataSize);
+
 
                 /* 全ユーザーに送る */
+                // SendData(ALL_CLIENTS, data, dataSize);
                 // SendData(ALL_CLIENTS, data, dataSize);
             }else if (judge_swing(1, pos_ball, rect_bat)) {
                 if(runners.first) {
@@ -171,8 +209,10 @@ int ExecuteCommand(char command, int pos) {
                 // printf("OK!\n");
                 /* コマンドのセット */
                 // SetCharData2DataBlock(data, JUDGE_HIT, &dataSize);
+                // SetCharData2DataBlock(data, JUDGE_HIT, &dataSize);
 
                 /* 全ユーザーに送る */
+                // SendData(ALL_CLIENTS, data, dataSize);
                 // SendData(ALL_CLIENTS, data, dataSize);
             }
 
@@ -226,6 +266,7 @@ int ExecuteCommand(char command, int pos) {
 
         //flg_send_count = 1;
             break;
+
         case PITI:
             dataSize = 0;
 
@@ -243,9 +284,10 @@ int ExecuteCommand(char command, int pos) {
             SetCharData2DataBlock(data, command, &dataSize);
             /* 全ユーザーに送る */
             SendData(ALL_CLIENTS, data, dataSize);      
-            printf("sever:1");      
+            printf("server:1\n");      
             break;
         case ZIGZAG:
+            BallType = ZIGZAG;
             BallType = ZIGZAG;
             dataSize = 0;
 
@@ -256,6 +298,7 @@ int ExecuteCommand(char command, int pos) {
             break;  
         case DISAPPEAR:
             BallType = DISAPPEAR;
+            BallType = DISAPPEAR;
             dataSize = 0;
 
             //数値のセット
@@ -264,6 +307,7 @@ int ExecuteCommand(char command, int pos) {
             SendData(ALL_CLIENTS, data, dataSize);    
             break; 
         case CURVE_R:
+            BallType = CURVE_R;
             BallType = CURVE_R;
             dataSize = 0;
 
@@ -274,6 +318,7 @@ int ExecuteCommand(char command, int pos) {
             break;  
         case CURVE_L:
             BallType = CURVE_L;
+            BallType = CURVE_L;
             dataSize = 0;
 
             //数値のセット
@@ -282,6 +327,7 @@ int ExecuteCommand(char command, int pos) {
             SendData(ALL_CLIENTS, data, dataSize);    
             break;
         case ACCELERATE:
+            BallType = ACCELERATE;
             BallType = ACCELERATE;
             dataSize = 0;
 

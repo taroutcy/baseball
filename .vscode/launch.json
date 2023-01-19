@@ -1,0 +1,50 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch", // デバッグ設定の名前
+            "type": "cppdbg",       // デバッグの言語
+            "request": "launch",    // デバッグ開始時に実行
+            "program": "${workspaceFolder}/server",  // デバッグ対象のプログラム
+            "args": [2], // デバッグ対象プログラムの引数
+            "stopAtEntry": true,    // デバッグ開始直後に停止
+            "cwd": "${workspaceFolder}",    // カレントディレクトリ
+            "environment": [    // 環境変数の設定，gdb起動には下記が必要
+                {
+                    "name": "SHELL",
+                    "value": "/bin/bash"
+                }
+            ],
+            "linux": {      // linuxでの設定
+                "MIMode": "gdb",    // デバッガの指定
+                "setupCommands": [  // vscodeデバッグのためのgdb設定
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ],
+            },
+            "windows": {    // windowsでの設定
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ],
+            },
+            "osx": {        // macでの設定
+                "MIMode": "lldb",
+                "setupCommands": [
+                    {
+                        "description": "Load .lldbinit",
+                        "text": "command source ~/.lldbinit",
+                    }
+                ],    
+            },
+            "preLaunchTask": "build sample" // デバッグ開始前に実行するタスク
+        }
+    ]
+}
