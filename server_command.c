@@ -25,12 +25,6 @@ SDL_Point ballPlace = {0, 0};
 runners_list runners = {false, false, false};
 
 
-SDL_Rect windowSize = {0, 0, 1200, 800};
-SDL_Point ballPlace = {0, 0};
-
-runners_list runners = {false, false, false};
-
-
 int judge_swing(int flg_swing, SDL_Point pos_ball, SDL_Rect rect_bat) {
     if (flg_swing && SDL_PointInRect(&pos_ball, &rect_bat))
         return 1;
@@ -58,10 +52,6 @@ int ExecuteCommand(char command, int pos) {
     unsigned char data[MAX_DATA];
     int dataSize, intData;
     int endFlag = 1;
-    static int flg_send_count = 0;
-
-    static int BallType = 0;
-    static int s_count = 0, b_count = 0, o_count = 0;
     static int flg_send_count = 0;
 
     static int BallType = 0;
@@ -121,13 +111,12 @@ int ExecuteCommand(char command, int pos) {
 
             //ストライクでません　
             /*if (judge_strike(1, ball, rect_bat)) {  // ストライク判定(仮)
-            /*if (judge_strike(1, ball, rect_bat)) {  // ストライク判定(仮)
                 printf("ストライク\n");
                 //Mix_PlayChannel(1,catch,0);
                 // Mix_Volume(1,MIX_MAX_VOLUME/5);   
             }
             */
-            */
+            
             if (pos_ball.y < 0 || pos_ball.y > 800) {
                 // 初期化命令を送信
                 /* コマンドのセット */

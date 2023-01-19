@@ -37,7 +37,7 @@
 #define BALL_PRAM_Y 'Y' /* ボールの座標を示すコマンド */
 
 
-#define BALL_PRAM_YP 'p' /* ボールの座標を示すコマンド */
+#define BALL_PRAM_YP 'P' /* ボールの座標を示すコマンド */
 
 #define JUDGE_HIT 'H'       /* ヒットを示すコマンド */
 #define JUDGE_TWOBASE 'T'    /* ツーベースを示すコマンド */
@@ -45,6 +45,12 @@
 #define RESET 'A'
 #define JUDGE 'J'
 
+#define SEND_COUNT 'C'
+#define STRIKE 's'
+#define BALL 'b'
+#define OUT 'o'
+
+#define NONE -1
 #define STRAIGHT 1
 #define ZIGZAG 2
 #define DISAPPEAR 3
@@ -79,8 +85,6 @@ typedef struct { // ボールカウント格納用
 //music
 Mix_Music *cheering,*start; // BGMデータ格納用構造体
 Mix_Chunk *hit,*karaburi,*catch,*makyu,*curve1; // 効果音データ格納用構造体
-
-int Batter_key;
 
 typedef struct // ボール用構造体
 {

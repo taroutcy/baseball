@@ -14,7 +14,6 @@
 
 static SDL_Window *gMainWindow;
 static SDL_Rect gButtonRect[MAX_CLIENTS + 2];
-static int CheckButtonNO(int x, int y, int num);
 
 //野球の描写および打つ判定の関数
 void *draw(void *param);
@@ -33,12 +32,6 @@ SDL_Rect strike_zone = {450, 500, 300, 200};
 // ika shimomura 
 SDL_Surface *bat[3] = {NULL, NULL, NULL}, *stadium;
 SDL_Texture *bat_tex[3], *stadium_tex;
-SDL_Surface *base1, *base2;
-SDL_Surface *light_g1, *light_g2, *light_y1, *light_y2, *light_r, *light_r2;
-SDL_Surface *tex_B, *tex_S, *tex_O;
-SDL_Texture *bg, *base_out, *base_in;
-SDL_Texture *texture_g1, *texture_g2, *texture_y1, *texture_y2, *texture_r, *texture_r2;
-SDL_Texture *B, *S, *O;
 SDL_Surface *base1, *base2;
 SDL_Surface *light_g1, *light_g2, *light_y1, *light_y2, *light_r, *light_r2;
 SDL_Surface *tex_B, *tex_S, *tex_O;
@@ -191,17 +184,6 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     tex_B = IMG_Load("B.png");
     tex_S = IMG_Load("S.png");
     tex_O = IMG_Load("O.png");
-    base1 = IMG_Load("white.png");
-    base2 = IMG_Load("red.png");
-    light_g1 = IMG_Load("g1.png");
-    light_g2 = IMG_Load("g2.png");
-    light_y1 = IMG_Load("y1.png");
-    light_y2 = IMG_Load("y2.png");
-    light_r = IMG_Load("r.png");
-    light_r2 = IMG_Load("r2.png");
-    tex_B = IMG_Load("B.png");
-    tex_S = IMG_Load("S.png");
-    tex_O = IMG_Load("O.png");
 
     if (!bat[0] || !bat[1] || !bat[2] || !stadium) {
         printf("image not load");
@@ -210,17 +192,6 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     bat_tex[1] = SDL_CreateTextureFromSurface(gMainRenderer, bat[1]);
     bat_tex[2] = SDL_CreateTextureFromSurface(gMainRenderer, bat[2]);
     stadium_tex = SDL_CreateTextureFromSurface(gMainRenderer, stadium);
-    base_out = SDL_CreateTextureFromSurface(gMainRenderer, base1);
-    base_in = SDL_CreateTextureFromSurface(gMainRenderer, base2);
-    texture_g1 = SDL_CreateTextureFromSurface(gMainRenderer, light_g1);
-    texture_g2 = SDL_CreateTextureFromSurface(gMainRenderer, light_g2);
-    texture_y1 = SDL_CreateTextureFromSurface(gMainRenderer, light_y1);
-    texture_y2 = SDL_CreateTextureFromSurface(gMainRenderer, light_y2);
-    texture_r = SDL_CreateTextureFromSurface(gMainRenderer, light_r);
-    texture_r2 = SDL_CreateTextureFromSurface(gMainRenderer, light_r2);
-    B = SDL_CreateTextureFromSurface(gMainRenderer, tex_B);
-    S = SDL_CreateTextureFromSurface(gMainRenderer, tex_S);
-    O = SDL_CreateTextureFromSurface(gMainRenderer, tex_O);
     base_out = SDL_CreateTextureFromSurface(gMainRenderer, base1);
     base_in = SDL_CreateTextureFromSurface(gMainRenderer, base2);
     texture_g1 = SDL_CreateTextureFromSurface(gMainRenderer, light_g1);
@@ -259,9 +230,7 @@ void Present(int i) {
             printf("hit"); 
         }else if(i == 2){
             printf("TwoBase");
-            printf("TwoBase");
             Mix_PlayChannel(1, hit, 0); 
-        }else if(i == 4){
         }else if(i == 4){
             printf("homerun");
             Mix_PlayChannel(1, hit, 0); 
@@ -325,12 +294,6 @@ void *draw(void *param) {  // 描画関数
 
     Count_present();
     Base_present();
-
-    Count_present();
-    Base_present();
-
-    Count_present();
-    Base_present();
     SDL_SetRenderDrawColor(gMainRenderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderDrawRect(gMainRenderer, &rect_bat);  // バット(枠)の描画 (hit)
     SDL_SetRenderDrawColor(gMainRenderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
@@ -362,8 +325,6 @@ void *draw(void *param) {  // 描画関数
     if (!(SDL_PointInRect(&pos_ball, &rect_bat))) {
         flg_swing = 0;
     }
-
-    if (ball_state == 0) {
     if (ball_state == 0) {
         ball.x = 600;
         ball.y = 100;
@@ -372,7 +333,6 @@ void *draw(void *param) {  // 描画関数
         ball.yp = 0;
         Pitya_key = 1;
         y = 0;
-        i_key = 0;
         i_key = 0;
     }
     if(Reset == 1){
@@ -468,21 +428,17 @@ void *draw(void *param) {  // 描画関数
     {
     case STRAIGHT:
         if (ball_state == 1)
-        if (ball_state == 1)
         {
             ball.yp = 15;
-            ball_state = 2;
             ball_state = 2;
             BallType = STRAIGHT;
         }
         break;
     case ZIGZAG:
         if (ball_state == 1)
-        if (ball_state == 1)
         {
             ball.xp = 50;
             ball.yp = 10;
-            ball_state = 2;
             ball_state = 2;
             BallType = ZIGZAG;
         }
@@ -491,94 +447,72 @@ void *draw(void *param) {  // 描画関数
         break;
     case DISAPPEAR:
         if (ball_state == 1)
-        if (ball_state == 1)
         {
             ball.yp = 15;
-            ball_state = 2;
             ball_state = 2;
             Mix_PlayChannel(1,makyu,0);
             Mix_Volume(1,MIX_MAX_VOLUME);
             BallType = DISAPPEAR;
         }
         if (flg_hit == 0 && ball.y >= 350 && ball_state == 2)
-        if (flg_hit == 0 && ball.y >= 350 && ball_state == 2)
             flg_erase_ball = 1;
         break;
     case CURVE_R:
-        if(ball_state == 1)
         if(ball_state == 1)
         {
             Mix_PlayChannel(1,curve1,1);
             Mix_Volume(1,MIX_MAX_VOLUME);
             ball.yp = 15;
             ball_state = 2;
-            ball_state = 2;
             BallType = CURVE_R;
         }
-        if(ball_state == 2)
         if(ball_state == 2)
         {
             ball.xp += 4; 
         }
-        if(ball_state == 3)
         if(ball_state == 3)
         {
             ball.xp -= 4; 
             if (ball.xp < 0) {
                 flag_over_l_edge = 1;
             }
-            if (ball.xp < 0) {
-                flag_over_l_edge = 1;
-            }
         }
         if(ball.y >= 225 && flg_hit == 0){
-            ball_state = 3;
             ball_state = 3;
         }
         break;
     
     case CURVE_L:
         if(ball_state == 1)
-        if(ball_state == 1)
         {
             Mix_PlayChannel(1,curve1,1);
              Mix_Volume(1,MIX_MAX_VOLUME);
             ball.yp = 15;
             ball_state = 2;
-            ball_state = 2;
             BallType = CURVE_L;
         }
-        if(ball_state == 2)
         if(ball_state == 2)
         {
             ball.xp -= 4; 
         }
-        if(ball_state == 3)
         if(ball_state == 3)
         {
             ball.xp += 4; 
             if (ball.xp > 1200) {
                 flag_over_r_edge = 1;
             }
-            if (ball.xp > 1200) {
-                flag_over_r_edge = 1;
-            }
         }
         if(ball.y >= 225 && flg_hit == 0){
-            ball_state = 3;
             ball_state = 3;
         }
         break;
     case ACCELERATE:
         if(ball_state == 1)
-        if(ball_state == 1)
         {
             ball.yp = 10;
             ball_state = 2;
-            ball_state = 2;
             BallType = ACCELERATE;
         }
-        if(ball_state == 2)
         if(ball_state == 2)
         {
             ball.yp += 3; 
@@ -778,31 +712,25 @@ void WindowEvent(int num, int clientID) {
                 if(clientID == 1){
                     //ジョイコンのボタンと対応したを挿入
                     if (jc.button.btn.A == 1 && ball_state == 0) {
-                    if (jc.button.btn.A == 1 && ball_state == 0) {
                         SendBallType(STRAIGHT);
                         printf("選択された球種: ストレート\n");
                     }
-                    if (jc.button.btn.B == 1 && ball_state == 0) {
                     if (jc.button.btn.B == 1 && ball_state == 0) {
                         SendBallType(ZIGZAG);
                         printf("選択された球種: ジグザグ\n");
                     }
                     if(jc.button.btn.Y == 1 && ball_state == 0){
-                    if(jc.button.btn.Y == 1 && ball_state == 0){
                         SendBallType(DISAPPEAR);
                         printf("選択された球種: 消えるストレート\n");
                     }
-                    if(jc.button.btn.X == 1 && ball_state == 0){
                     if(jc.button.btn.X == 1 && ball_state == 0){
                         SendBallType(CURVE_R);
                         printf("選択された球種: 右カーブ\n");
                     }
                     if(jc.button.btn.R == 1 && ball_state == 0){
-                    if(jc.button.btn.R == 1 && ball_state == 0){
                         SendBallType(CURVE_L);
                         printf("選択された球種: 左カーブ\n");
                     }
-                    if(jc.button.btn.ZR == 1 && ball_state == 0){
                     if(jc.button.btn.ZR == 1 && ball_state == 0){
                         SendBallType(ACCELERATE);
                         printf("選択された球種: 加速ストレート\n");
@@ -818,31 +746,7 @@ void WindowEvent(int num, int clientID) {
     SDL_Delay(10);
 }
 
-/*****
-static
-*****/
-/*****************************************************************
-関数名	: CheckButtonNO
-機能	: クリックされたボタンの番号を返す
-引数	: int	   x		: マウスの押された x 座標
-          int	   y		: マウスの押された y 座標
-          char	   num		: 全クライアント数
-出力	: 押されたボタンの番号を返す
-          ボタンが押されていない時は-1を返す
-*****************************************************************/
-static int CheckButtonNO(int x, int y, int num) {
-    int i;
 
-    for (i = 0; i < num + 2; i++) {
-        if (gButtonRect[i].x < x &&
-            gButtonRect[i].y < y &&
-            gButtonRect[i].x + gButtonRect[i].w > x &&
-            gButtonRect[i].y + gButtonRect[i].h > y) {
-            return i;
-        }
-    }
-    return -1;
-}
 
 void Base_present()
 {
