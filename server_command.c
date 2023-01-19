@@ -389,6 +389,7 @@ int ExecuteCommand(char command, int pos) {
 
 
         if(s_count > 2){
+            b_count = 0;
             s_count = 0;
             o_count++;
         }
