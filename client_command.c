@@ -15,7 +15,14 @@ int key2 = 1;
 
 int ball_y = 0;
 
+int flg_batter_win_game = 0;
+int flg_increase_out = 0;
+int flg_recv_homerun = 0;
+int flg_recv_twobase = 0;
+int flg_recv_hit = 0;
+
 ball_count count = {0, 0, 0};
+ball_count previous_count = {0, 0, 0};
 runners_list runners_recv = {0, 0, 0};
 /*****************************************************************
 関数名	: ExecuteCommand
@@ -34,6 +41,9 @@ int ExecuteCommand(char command)
     printf("ExecuteCommand()\n");
     printf("command = %c\n", command);
 #endif
+    if (command != STRIKE && command != BALL && command != OUT && command != FIRST && command != SECOND && command != THIRD){
+        //printf("i receive %c from clients.\n", command);
+    }
     //key変数のリセット
     key1 = 1;
     key2 = 1;
@@ -41,19 +51,6 @@ int ExecuteCommand(char command)
     {
     case END_COMMAND:
         endFlag = 0;
-        break;
-    case JUDGE_HIT:
-        Present(1);
-        y = 1; //ボールの速度を変更
-        //printf("%d", intData);
-        break;
-    case JUDGE_TWOBASE:
-        Present(2);
-        y = 1;
-        break;
-    case JUDGE_HOMERUN:
-        Present(4);
-        y = 1;
         break;
     case Batter_Swing_COMMAND:
         bat_disp = 1;
@@ -79,21 +76,39 @@ int ExecuteCommand(char command)
         break;
     case PITI:
         ball_state = 1;
+        ball_state_Speed = 0;
+        break;
+    case PITI_2:
+        ball_state = 1;
+        ball_state_Speed = 1;
+        break;
+    case PITI_3:
+        ball_state = 1;
+        ball_state_Speed = 2;
         break;
     case RESET:
         ball_state = 0;
         Reset = 1;
         break;
     case BALL:
-        RecvIntData(&count.ball);
+        RecvIntData(&previous_count.ball);
+        if (previous_count.ball <= 5) {
+            count.ball = previous_count.ball;
+        }
         //printf("ball: %d\n", count.ball);
         break;
     case STRIKE:
-        RecvIntData(&count.strike);
-        //printf("strike: %d\n", count.strike);
+        RecvIntData(&previous_count.strike);
+        if (previous_count.strike <= 5) {
+            count.strike = previous_count.strike;
+        }
+        // printf("strike: %d\n", count.strike);
         break;
     case OUT:
-        RecvIntData(&count.out);
+        RecvIntData(&previous_count.out);
+        if (previous_count.out <= 5) {
+            count.out = previous_count.out;
+        }
         //printf("out: %d\n", count.out);
         break;
     case FIRST:
@@ -107,7 +122,21 @@ int ExecuteCommand(char command)
     case THIRD:
         RecvIntData(&runners_recv.third);
         //printf("third: %d\n", runners_recv.third);
-        break;   
+        break;  
+    case SCORE:
+        flg_batter_win_game = 1;
+        break;
+    case INCREASE_OUT:
+        flg_increase_out = 1;
+    case HOMERUN:
+        flg_recv_homerun = 1;
+        y = 1;
+    case TWOBASE:
+        flg_recv_twobase = 1;
+        y = 1;
+    case HIT:
+        flg_recv_hit = 1;
+        y = 1;
     }
     return endFlag;
 }
@@ -179,7 +208,7 @@ void SendBall_x(SDL_Point pos_ball)
 }
 
 //投手がたまを投げたという合図を送る
-void SendPiti(void){
+void SendPiti(int i){
     unsigned char data[MAX_DATA];
     int dataSize;
 
@@ -189,10 +218,22 @@ void SendPiti(void){
     printf("Send Circle Command to");
 #endif
     dataSize = 0;
+    if(i == 1){\
+        /* コマンドのセット */
+        SetCharData2DataBlock(data, PITI, &dataSize);
+        //データ送信
+        SendData(data, dataSize);
+    }else if(i == 2){
     /* コマンドのセット */
-    SetCharData2DataBlock(data, PITI, &dataSize);
-    //データ送信
-    SendData(data, dataSize);
+        SetCharData2DataBlock(data, PITI_2, &dataSize);
+        //データ送信
+        SendData(data, dataSize);
+    }else if(i == 3){
+    /* コマンドのセット */
+        SetCharData2DataBlock(data, PITI_3, &dataSize);
+        //データ送信
+        SendData(data, dataSize);
+    }
 }
 
 //合図を送る

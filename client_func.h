@@ -32,8 +32,16 @@ extern void WindowEvent(int num,int clientID);
 extern void Present(int i);
 extern void Base_present();
 extern void Count_present();
+extern void Text(int i);
 extern ball_count count;
 extern runners_list runners_recv;
+extern int flg_batter_win_game;
+extern int flg_increase_out;
+extern int flg_recv_homerun;
+extern int flg_recv_twobase;
+extern int flg_recv_hit;
+extern int ball_state;
+extern int ball_state_Speed;
 
 //タイマ処理によって描写関数を呼び出す
 extern Uint32 draw_timer(Uint32 interval, void *param);
@@ -45,7 +53,7 @@ extern void SendEndCommand(void);
 extern void SendBall_x(SDL_Point pos_ball);
 extern void SendBall_y(SDL_Point pos_ball);
 extern void SendBatter_swing(void);
-extern void SendPiti(void);
+extern void SendPiti(int i);
 extern void Send_JUDGE(void);
 
 #endif

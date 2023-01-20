@@ -26,30 +26,6 @@
 #define WINDOW_X 1200 //ウィンドウサイズx
 #define WINDOW_Y 800 //ウィンドウサイズy
 
-#define END_COMMAND 'E'     /* プログラム終了コマンド */
-#define JUDGE_WIN 'W'       /* 勝ちを示すコマンド */
-#define JUDGE_LOSE 'L'      /* 負けを示すコマンド */
-#define JUDGE_GOBU 'G'      /* 引き分けを示すコマンド */
-
-#define Batter_Swing_COMMAND 'S'
-#define PITI 'P'
-#define BALL_PRAM_X 'X' /* ボールの座標を示すコマンド */
-#define BALL_PRAM_Y 'Y' /* ボールの座標を示すコマンド */
-
-
-#define BALL_PRAM_YP 'p' /* ボールの座標を示すコマンド */
-
-#define JUDGE_HIT 'H'       /* ヒットを示すコマンド */
-#define JUDGE_TWOBASE 'T'    /* ツーベースを示すコマンド */
-#define JUDGE_HOMERUN 'R'    /* ホームランを示すコマンド */
-#define RESET 'A'
-#define JUDGE 'J'
-
-#define SEND_COUNT 'C'
-#define STRIKE 'k'
-#define BALL 'b'
-#define OUT 'o'
-
 #define NONE -1
 #define STRAIGHT 1
 #define ZIGZAG 2
@@ -58,9 +34,36 @@
 #define CURVE_L 5
 #define ACCELERATE 6
 
-#define FIRST 'f'
-#define SECOND 'z'
-#define THIRD 't'
+#define END_COMMAND 'A'     /* プログラム終了コマンド */
+#define JUDGE_WIN 'B'       /* 勝ちを示すコマンド */
+#define JUDGE_LOSE 'C'      /* 負けを示すコマンド */
+#define JUDGE_GOBU 'D'      /* 引き分けを示すコマンド */
+#define Batter_Swing_COMMAND 'E'
+#define PITI 'F'
+#define BALL_PRAM_X 'G' /* ボールの座標を示すコマンド */
+#define BALL_PRAM_Y 'H' /* ボールの座標を示すコマンド */
+#define BALL_PRAM_YP 'I' /* ボールの座標を示すコマンド */
+#define JUDGE_HIT 'J'       /* ヒットを示すコマンド */
+#define JUDGE_TWOBASE 'K'    /* ツーベースを示すコマンド */
+#define JUDGE_HOMERUN 'L'    /* ホームランを示すコマンド */
+#define RESET 'M'
+#define JUDGE 'N'
+#define SEND_COUNT 'O'
+#define STRIKE 'P'
+#define BALL 'Q'
+#define OUT 'R'
+#define FIRST 'T'
+#define SECOND 'U'
+#define THIRD 'V'
+#define SCORE 'W'
+#define INCREASE_OUT 'X'
+#define INCREASE_STRIKE 'Y'
+#define INCREASE_BALL 'Z'
+#define HIT '7'
+#define TWOBASE '8'
+#define HOMERUN '9'
+#define PITI_2 's'
+#define PITI_3 't'
 
 SDL_Renderer *gMainRenderer;
 
@@ -68,7 +71,6 @@ SDL_Renderer *gMainRenderer;
 SDL_TimerID my_timer_id;
 SDL_TimerID my_timer_id_bat;
 
-int ball_state;
 int y;
 int flg_ball_pattern; // 選択した球種
 int flg_select_ball;  // 球種選択したか
@@ -84,7 +86,7 @@ typedef struct { // ボールカウント格納用
 
 //music
 Mix_Music *cheering,*start; // BGMデータ格納用構造体
-Mix_Chunk *hit,*karaburi,*catch,*makyu,*curve1; // 効果音データ格納用構造体
+Mix_Chunk *hit,*karaburi,*catch,*makyu,*curve1, *kansei1, *kansei2; // 効果音データ格納用構造体
 
 int Batter_key;
 
@@ -101,6 +103,9 @@ typedef struct {
     bool first;
     bool second;
     bool third;
+    bool home;
 } runners_list;
+
+
 
 #endif
