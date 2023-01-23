@@ -124,7 +124,7 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
 
     /* SDLの初期化, Joyconの初期化 */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
-        printf("failed to initialize SDL.\n");
+        //printf("failed to initialize SDL.\n");
         return -1;
     }
 
@@ -135,7 +135,7 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
 
     // オーディオデバイスの初期化
     if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) < 0) {
-        printf("failed to initialize SDL_mixer.\n");
+        //printf("failed to initialize SDL_mixer.\n");
         SDL_Quit();
         exit(-1);
     }
@@ -144,7 +144,7 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     if((cheering = Mix_LoadMUS("cheering.mp3")) == NULL || (start = Mix_LoadMUS("start.mp3")) == NULL || (hit = Mix_LoadWAV("hit.wav")) == NULL 
     || (catch = Mix_LoadWAV("catch.wav")) == NULL || (karaburi = Mix_LoadWAV("karaburi.wav")) == NULL || (makyu = Mix_LoadWAV("makyu.wav")) == NULL
     || (curve1 = Mix_LoadWAV("curve1.wav")) == NULL || (kansei1 = Mix_LoadWAV("1hit2.wav")) == NULL || (kansei2 = Mix_LoadWAV("2basehits.wav")) == NULL) {
-        printf("failed to load music and chunk.\n");
+        //printf("failed to load music and chunk.\n");
         Mix_CloseAudio(); // オーディオデバイスの終了
         SDL_Quit();
         exit(-1);
@@ -155,7 +155,7 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
 
     /* メインのウインドウを作成する */
     if ((gMainWindow = SDL_CreateWindow("My Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 800, 0)) == NULL) {
-        printf("failed to initialize videomode.\n");
+        //printf("failed to initialize videomode.\n");
         return -1;
     }
 
@@ -171,14 +171,14 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     // BGMを流す\
 
     SDL_JoystickID joyid[2] = {};
-    printf("%d\n", SDL_NumJoysticks());
+    //printf("%d\n", SDL_NumJoysticks());
     // 接続されているジョイスティックの名前を表示
     for (int i = 0; i < 2; i++) {                 // 接続されているジョイスティックの数だけ繰り返す
         SDL_Joystick *joy = SDL_JoystickOpen(i);  // ジョイスティックを開く
     }
     // joycon接続しないとエラーするのでJoyCon処理しない方はコメントアウトのまま
     if (joycon_open(&jc, JOYCON_R)) {
-        printf("joycon open failed.\n");
+        //printf("joycon open failed.\n");
         return -1;
     }
 
@@ -209,7 +209,7 @@ int InitWindows(int clientID, int num, char name[][MAX_NAME_SIZE]) {
     text_l =IMG_Load("lose.png");
 
     if (!bat[0] || !bat[1] || !bat[2] || !stadium) {
-        printf("image not load");
+        //printf("image not load");
     }
     bat_tex[0] = SDL_CreateTextureFromSurface(gMainRenderer, bat[0]);
     bat_tex[1] = SDL_CreateTextureFromSurface(gMainRenderer, bat[1]);
@@ -340,7 +340,7 @@ void *draw(void *param) {  // 描画関数
         flg_recv_homerun = 0;
         previous_time = SDL_GetTicks();
     }
-    printf("Ballstate: %d, ball.y: %d\n", ball_state, ball.y);
+    //printf("Ballstate: %d, ball.y: %d\n", ball_state, ball.y);
     if (flg_batter_win_game == 1){
         if ( batter_win == 0){
             batter_win = 1;
@@ -393,7 +393,7 @@ void *draw(void *param) {  // 描画関数
     }
 
 
-    //printf("Bat swing %d\n",Bat_swing);
+    ////printf("Bat swing %d\n",Bat_swing);
 
     if (ball_state == 0) {
         ball.x = 600;
@@ -404,7 +404,7 @@ void *draw(void *param) {  // 描画関数
         Pitya_key = 1;
         y = 0;
         i_key = 0;
-        //printf("reset in client_win\n");
+        ////printf("reset in client_win\n");
     }
     if(Reset == 1){
         Batter_key = 1;
@@ -570,7 +570,7 @@ void *animeBatter() {
         SDL_RenderCopy(gMainRenderer, bat_tex[Batter_Speed_True], &imgRect, &drawRect);
         SDL_RenderPresent(gMainRenderer);
 
-        //printf("butter speed: %d\n", Batter_Speed_True);
+        ////printf("butter speed: %d\n", Batter_Speed_True);
         count_disp++;
 
         if (count_disp >= bat_num[Batter_Speed_True]) {
@@ -592,7 +592,7 @@ void animeBatter_JUDGE(void) {
             Batter_Speed_True = 0;
             Mix_PlayChannel(1,karaburi,0);
             Mix_Volume(1,MIX_MAX_VOLUME*10);
-            // printf("%d",pos_ball.x);
+            //// printf("%d",pos_ball.x);
         }
         //普通のスイングアニメーションを流す
         if (Batter_Speed == 1) {
@@ -664,7 +664,7 @@ void WindowEvent(int num, int clientID) {
                 // 押されたキーごとに処理
                 switch (event.key.keysym.sym) {
                     case SDLK_RETURN:  // Enterキーが押された時
-                        printf("enter\n");
+                        //printf("enter\n");
                         break;
                     case SDLK_ESCAPE:
                         SendEndCommand();
@@ -692,11 +692,11 @@ void WindowEvent(int num, int clientID) {
                         Pitya_Speed = 2;
                         animePitya_JUDGE();
                     } else if (jc.axis[2].acc_y > 40.0 || jc.axis[2].acc_y < -40.0) {
-                        // printf("中");
+                        //// printf("中");
                         Pitya_Speed = 1;
                         animePitya_JUDGE();
                     } else if (jc.axis[2].acc_y > 20.0 || jc.axis[2].acc_y < -20.0) {
-                        // printf("小");
+                        //// printf("小");
                         Pitya_Speed= 0;
                         animePitya_JUDGE();
                     }
@@ -916,7 +916,7 @@ void Count_present()
         previous_time = SDL_GetTicks();
         Mix_PlayChannel(1, catch, 0);
     }
-    //printf("%d\n", count.strike);
+    ////printf("%d\n", count.strike);
     if ( pre_count[1] < (count.ball % 4) ) {
         pre_count[1] = count.ball;
         text_num = 6;
